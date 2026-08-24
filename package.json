@@ -1,0 +1,25 @@
+{
+  "name": "proconnect-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Marketplace connecting people with vetted professionals: lawyers, tradespeople, accountants, real estate agents, coaches and more.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "workspaces": [
+    "server",
+    "web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm run dev -w server\" \"npm run dev -w web\"",
+    "build": "npm run build -w server && npm run build -w web",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w web",
+    "test": "npm run test -w server",
+    "seed": "npm run seed -w server",
+    "start": "npm run start -w server"
+  },
+  "devDependencies": {
+    "concurrently": "9.2.1"
+  }
+}
