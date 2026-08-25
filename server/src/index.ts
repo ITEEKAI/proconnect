@@ -13,4 +13,5 @@ if (config.isProduction && config.usingDefaultAuthSecret) {
 createApp().listen(config.port, config.host, () => {
   console.log(`[api] SimplyServices listening on http://${config.host}:${config.port}`);
   console.log(`[api] Payments: ${config.paymentsProvider}`);
+  console.log(`[api] Database: ${config.databasePath}`);
 });

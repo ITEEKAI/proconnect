@@ -176,8 +176,9 @@ database, covering:
 | --- | --- | --- |
 | `PORT` | `4000` | API port |
 | `HOST` | `127.0.0.1` | API bind address |
-| `DATABASE_PATH` | `server/data/proconnect.db` | SQLite file |
-| `UPLOADS_DIR` | `server/data/uploads` | Local avatar files |
+| `DATABASE_PATH` | `server/data/proconnect.db` (or `/data/…` if `/data` exists) | SQLite file |
+| `UPLOADS_DIR` | `server/data/uploads` (or `/data/uploads`) | Local avatar files |
+| `DATA_DIR` | unset | If set (or `/data` exists), database and uploads live there — use this on Railway |
 | `AUTH_SECRET` | development default | Session token signing key |
 | `TOKEN_TTL_SECONDS` | `43200` | Session lifetime |
 | `API_PROXY_TARGET` | `http://127.0.0.1:4000` | Where Vite proxies `/api` and `/uploads` |
@@ -200,14 +201,33 @@ When `STRIPE_SECRET_KEY` is set (start with `sk_test_…`):
 
 Commission on completed jobs is stored on the booking when the job is paid. Stripe Connect (automatic splits to professionals) is the next payment step after test/live Checkout is working.
 
-### Production (one URL)
+### Production (Railway)
+
+Railway is the intended host: one Docker service, HTTPS URL, persistent volume for SQLite and avatars.
+
+1. Create a project at [railway.app](https://railway.app) and connect this GitHub repo (`ITEEKAI/proconnect`).
+2. Railway will build the `Dockerfile` (`railway.toml` selects it).
+3. Add a **volume** mounted at `/data` so the database and uploads survive deploys.
+4. Set these variables in the service:
+
+| Variable | Value |
+| --- | --- |
+| `AUTH_SECRET` | A long random string (`openssl rand -hex 32`) |
+| `PUBLIC_URL` | Your live origin, e.g. `https://app.simplyservices.com` (optional on first boot — Railway’s `*.up.railway.app` domain is used if unset) |
+| `STRIPE_SECRET_KEY` | Leave empty for test checkout; add `sk_test_…` then live keys when ready |
+| `STRIPE_WEBHOOK_SECRET` | From the Stripe dashboard webhook (`https://YOUR_DOMAIN/api/stripe/webhook`) |
+
+`PORT` and `HOST` are handled for you. Data files default to `/data/proconnect.db` and `/data/uploads` when that volume exists.
+
+5. Generate a domain (Railway → Settings → Networking) or attach `app.simplyservices.com`.
+6. Put that URL on a header/hero button (and QR codes) on the SimplyServices Hostinger site.
+
+Local equivalent:
 
 ```bash
 npm run build
 NODE_ENV=production HOST=0.0.0.0 PUBLIC_URL=https://app.example.com AUTH_SECRET=… npm start
 ```
-
-The API then serves `web/dist` from the same port, so phone, desktop and QR codes all hit one origin. A `Dockerfile` is included for Railway, Render or a VPS.
 
 ## Not included
 
