@@ -12,6 +12,7 @@ import { ProfilePage } from './pages/public/ProfilePage';
 import { Login, Signup } from './pages/public/Auth';
 import { ForProfessionals, HowItWorks } from './pages/public/ForProfessionals';
 import { Join } from './pages/public/Join';
+import { CheckoutPage } from './pages/public/Checkout';
 
 import { Account } from './pages/client/Account';
 import { ClientBookingDetail } from './pages/client/BookingDetail';
@@ -76,6 +77,14 @@ export function App() {
           <Route path="/for-professionals" element={<ForProfessionals />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/join" element={<Join />} />
+          <Route
+            path="/checkout/:sessionId"
+            element={
+              <RequireRole roles={['client', 'professional']}>
+                <CheckoutPage />
+              </RequireRole>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<NotFound />} />

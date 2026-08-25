@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { formatDateTime, hoursLabel, money } from '../lib/format';
@@ -28,11 +28,28 @@ export function BookingThread({
   const [busy, setBusy] = useState(false);
   const [hours, setHours] = useState('');
   const [note, setNote] = useState('');
+  const [params, setParams] = useSearchParams();
+  const handledCheckout = useRef<string | null>(null);
 
   const data = booking.data?.booking;
   const messages = thread.data?.messages ?? [];
   const isClient = user?.role === 'client';
   const isPro = user?.role === 'professional';
+  const checkoutState = params.get('checkout');
+  const checkoutSessionId = params.get('session_id');
+
+  useEffect(() => {
+    if (checkoutState !== 'success' || !checkoutSessionId) return;
+    if (handledCheckout.current === checkoutSessionId) return;
+    handledCheckout.current = checkoutSessionId;
+    void api('/payments/confirm', { body: { sessionId: checkoutSessionId } }).finally(() => {
+      booking.reload();
+      const next = new URLSearchParams(params);
+      next.delete('checkout');
+      next.delete('session_id');
+      setParams(next, { replace: true });
+    });
+  }, [checkoutState, checkoutSessionId, params, setParams, booking]);
 
   async function send(event: React.FormEvent) {
     event.preventDefault();
@@ -59,6 +76,18 @@ export function BookingThread({
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not update this booking.');
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function startPayment() {
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await api<{ url: string }>(`/bookings/${bookingId}/pay`, { body: {} });
+      window.location.assign(result.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not start checkout.');
       setBusy(false);
     }
   }
@@ -131,6 +160,13 @@ export function BookingThread({
             <p className="bg-ink-50 text-ink-700 mt-4 rounded-lg px-3.5 py-2.5 text-sm">
               <span className="font-medium">Note:</span> {data.professionalNote}
             </p>
+          )}
+          {checkoutState === 'cancel' && (
+            <div className="mt-4">
+              <Alert tone="warning" title="Checkout cancelled">
+                No payment was taken. You can try again when you are ready.
+              </Alert>
+            </div>
           )}
         </Card>
 
@@ -236,12 +272,12 @@ export function BookingThread({
               </Button>
             )}
             {isClient && data.status === 'completed' && data.paymentStatus !== 'paid' && (
-              <Button className="w-full" loading={busy} onClick={() => void act('/pay')}>
-                Record payment · {money(total, data.currency)}
+              <Button className="w-full" loading={busy} onClick={() => void startPayment()}>
+                Pay {money(total, data.currency)}
               </Button>
             )}
             {isClient && data.status === 'completed' && data.paymentStatus === 'paid' && (
-              <p className="text-sm font-medium text-emerald-700">Payment recorded.</p>
+              <p className="text-sm font-medium text-emerald-700">Paid by card.</p>
             )}
             {isClient && (
               <Link

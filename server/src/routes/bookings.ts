@@ -8,6 +8,7 @@ import { findById, recalculateRating, requireOwnProfile } from '../domain/profes
 import { ApiError } from '../lib/errors.ts';
 import { bookingReference } from '../lib/format.ts';
 import { asyncHandler, parseBody } from '../lib/http.ts';
+import { startCheckout } from '../payments/checkout.ts';
 
 export const bookingsRouter = Router();
 bookingsRouter.use(requireAuth());
@@ -357,22 +358,26 @@ bookingsRouter.post(
 bookingsRouter.post(
   '/:id/pay',
   requireAuth('client'),
-  asyncHandler((req, res) => {
+  asyncHandler(async (req, res) => {
     const row = loadForActor(req, Number(req.params.id));
     if (row.status !== 'completed') {
       throw ApiError.badRequest('Payment is only available after the job is completed.');
     }
     if (row.payment_status === 'paid') throw ApiError.badRequest('This booking is already paid.');
-    run(`UPDATE bookings SET payment_status = 'paid', updated_at = datetime('now') WHERE id = ?`, row.id);
-    const updated = get<BookingRow>(`${BOOKING_SELECT} WHERE b.id = ?`, row.id);
-    notify(
-      row.professional_user_id,
-      'booking.paid',
-      `${row.reference} was marked paid`,
-      `${currentUser(req).full_name} recorded payment.`,
-      `/dashboard/bookings/${row.id}`,
-    );
-    res.json({ booking: updated && toDto(updated) });
+    const user = currentUser(req);
+    const amount = row.total_cents ?? Math.round(row.hourly_rate_cents * row.estimated_hours) + row.callout_fee_cents;
+    const checkout = await startCheckout({
+      kind: 'booking',
+      bookingId: row.id,
+      payerUserId: user.id,
+      customerEmail: user.email,
+      amountCents: amount,
+      currency: row.currency,
+      description: `${row.reference} · ${row.subject}`,
+      successPath: `/account/bookings/${row.id}`,
+      cancelPath: `/account/bookings/${row.id}`,
+    });
+    res.json(checkout);
   }),
 );
 

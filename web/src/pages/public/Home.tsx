@@ -252,7 +252,7 @@ export function Home() {
             { icon: 'tag' as const, title: 'Transparent pricing', body: 'Published hourly rates. No hidden fees after you book.' },
             { icon: 'checkCircle' as const, title: 'Quality guarantees', body: 'Reviews are tied to completed bookings, not anonymous praise.' },
             { icon: 'bolt' as const, title: 'Fast matching', body: 'Search, filter and request in minutes — not days of phone tag.' },
-            { icon: 'card' as const, title: 'Secure payments', body: 'Record payment on the job once the hours are logged.' },
+            { icon: 'card' as const, title: 'Secure payments', body: 'Pay the job invoice by card once the hours are logged.' },
             { icon: 'message' as const, title: '24/7 in-app inbox', body: 'Messages and alerts sit on the booking, not across apps.' },
             { icon: 'pin' as const, title: 'Local experts', body: 'Filter by town, region and the areas they actually cover.' },
             { icon: 'clock' as const, title: 'Time savings', body: 'One marketplace instead of a dozen websites and call-backs.' },

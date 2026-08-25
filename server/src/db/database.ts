@@ -25,6 +25,32 @@ function migrate(db: DatabaseSync): void {
     db.exec(`ALTER TABLE bookings ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'unpaid'`);
   }
 
+  const tables = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table'`).all() as Array<{ name: string }>;
+  if (!tables.some((row) => row.name === 'payment_sessions')) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS payment_sessions (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        provider        TEXT    NOT NULL CHECK (provider IN ('stripe', 'demo')),
+        provider_ref    TEXT    NOT NULL UNIQUE,
+        kind            TEXT    NOT NULL CHECK (kind IN ('booking', 'membership')),
+        booking_id      INTEGER REFERENCES bookings (id) ON DELETE SET NULL,
+        invoice_id      INTEGER REFERENCES subscription_invoices (id) ON DELETE SET NULL,
+        payer_user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+        amount_cents    INTEGER NOT NULL CHECK (amount_cents >= 0),
+        currency        TEXT    NOT NULL DEFAULT 'GBP',
+        description     TEXT    NOT NULL DEFAULT '',
+        success_path    TEXT    NOT NULL,
+        cancel_path     TEXT    NOT NULL,
+        status          TEXT    NOT NULL DEFAULT 'pending'
+                        CHECK (status IN ('pending', 'paid', 'cancelled')),
+        created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+        updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+      );
+      CREATE INDEX IF NOT EXISTS idx_payment_sessions_ref ON payment_sessions (provider_ref);
+      CREATE INDEX IF NOT EXISTS idx_payment_sessions_booking ON payment_sessions (booking_id);
+    `);
+  }
+
   const slotCount = (db.prepare('SELECT COUNT(*) AS n FROM availability_slots').get() as { n: number }).n;
   if (slotCount === 0) {
     const professionals = db.prepare('SELECT id FROM professionals').all() as Array<{ id: number }>;

@@ -187,7 +187,7 @@ describe('notifications, messages, availability, avatars and payments', () => {
     assert.equal(removed.body.professional.avatarUrl, null);
   });
 
-  it('lets the client record payment after the job is completed', async () => {
+    it('lets the client pay by card after the job is completed', async () => {
     const tooSoon = await ctx.request(`/api/bookings/${bookingId}/pay`, { token: clientToken, json: {} });
     assert.equal(tooSoon.status, 400);
 
@@ -200,7 +200,16 @@ describe('notifications, messages, availability, avatars and payments', () => {
 
     const paid = await ctx.request(`/api/bookings/${bookingId}/pay`, { token: clientToken, json: {} });
     assert.equal(paid.status, 200);
-    assert.equal(paid.body.booking.paymentStatus, 'paid');
+    assert.equal(paid.body.provider, 'demo');
+    const sessionId = paid.body.sessionId as string;
+    const completedPay = await ctx.request(`/api/payments/sessions/${sessionId}/complete`, {
+      token: clientToken,
+      json: {},
+    });
+    assert.equal(completedPay.status, 200);
+
+    const booking = await ctx.request(`/api/bookings/${bookingId}`, { token: clientToken });
+    assert.equal(booking.body.booking.paymentStatus, 'paid');
 
     const again = await ctx.request(`/api/bookings/${bookingId}/pay`, { token: clientToken, json: {} });
     assert.equal(again.status, 400);

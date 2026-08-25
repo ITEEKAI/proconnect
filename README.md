@@ -181,12 +181,34 @@ database, covering:
 | `AUTH_SECRET` | development default | Session token signing key |
 | `TOKEN_TTL_SECONDS` | `43200` | Session lifetime |
 | `API_PROXY_TARGET` | `http://127.0.0.1:4000` | Where Vite proxies `/api` and `/uploads` |
+| `PUBLIC_URL` | `http://127.0.0.1:5173` in dev | Public origin for checkout redirects (required for Stripe) |
+| `STRIPE_SECRET_KEY` | unset | When set, job and membership payments use Stripe Checkout |
+| `STRIPE_WEBHOOK_SECRET` | unset | Verifies `checkout.session.completed` webhooks |
+| `WEB_DIST` | `web/dist` | Production SPA files served by the API |
 
 `AUTH_SECRET` must be set to a real secret outside local development.
 
+### Payments
+
+Without Stripe keys the app uses a **test checkout** at `/checkout/:sessionId` (card `4242…`, no real charge). That is what local demo and Cloud Agent environments run.
+
+When `STRIPE_SECRET_KEY` is set (start with `sk_test_…`):
+
+1. Joe Public clicks **Pay** on a completed job and is sent to Stripe Checkout.
+2. The professional clicks **Pay now** on a due membership invoice and is sent to Stripe Checkout.
+3. Stripe redirects back; a webhook (and a confirm-on-return call) marks the invoice paid.
+
+Commission on completed jobs is stored on the booking when the job is paid. Stripe Connect (automatic splits to professionals) is the next payment step after test/live Checkout is working.
+
+### Production (one URL)
+
+```bash
+npm run build
+NODE_ENV=production HOST=0.0.0.0 PUBLIC_URL=https://app.example.com AUTH_SECRET=… npm start
+```
+
+The API then serves `web/dist` from the same port, so phone, desktop and QR codes all hit one origin. A `Dockerfile` is included for Railway, Render or a VPS.
+
 ## Not included
 
-This is a working product build, not a production deployment. Payments are
-modelled (fees, commissions, invoices and a client “record payment” action)
-but no card processor is wired up, and there is no email delivery. Avatar
-photos are stored on the local disk under `/uploads`.
+Card payouts to professionals (Stripe Connect), email delivery, and a live card processor until you add Stripe keys. Avatar photos are stored on the local disk under `/uploads`.

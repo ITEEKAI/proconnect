@@ -197,6 +197,10 @@ export function HowItWorks() {
               'Nothing. Your booking stores the rate that was advertised when you sent the request, and the final invoice uses that figure.',
             ],
             [
+              'How do I pay?',
+              'After the professional logs the hours, you pay the job invoice by card. Until Stripe live keys are added, the app uses a test checkout (card 4242…). Professionals pay their monthly membership the same way from Membership.',
+            ],
+            [
               'What does the professional pay?',
               'A flat monthly membership fee based on their plan, plus a commission on completed work. Administrators can agree a bespoke monthly fee, which is shown to the professional in their billing tab.',
             ],

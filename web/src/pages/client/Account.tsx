@@ -119,7 +119,7 @@ export function Account() {
                 </LinkButton>
                 {booking.status === 'completed' && booking.paymentStatus !== 'paid' && (
                   <LinkButton size="sm" to={`/account/bookings/${booking.id}`}>
-                    Record payment
+                    Pay now
                   </LinkButton>
                 )}
                 {booking.status === 'completed' && (
