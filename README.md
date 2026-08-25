@@ -1,7 +1,9 @@
 # ProConnect
 
-A marketplace that connects people who need professional help with vetted
-lawyers, tradespeople, accountants, real estate agents, coaches and more.
+The SimplyServices professional marketplace. It connects people who need
+help with vetted lawyers, tradespeople, accountants, real estate agents,
+coaches and more — branded to the SimplyServices webapp, with hourly-rate
+booking rather than a three-quote lead auction.
 
 It has three surfaces:
 

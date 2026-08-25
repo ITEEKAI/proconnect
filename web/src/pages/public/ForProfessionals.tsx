@@ -130,7 +130,7 @@ export function HowItWorks() {
   return (
     <div className="container-page py-14 lg:py-20">
       <header className="mx-auto max-w-2xl text-center">
-        <h1 className="text-ink-950 text-4xl font-semibold tracking-tight">How ProConnect works</h1>
+        <h1 className="text-ink-950 text-4xl font-semibold tracking-tight">How SimplyServices works</h1>
         <p className="text-ink-500 mt-4 text-lg">
           A marketplace built around one idea: you should know the hourly rate before you make contact.
         </p>

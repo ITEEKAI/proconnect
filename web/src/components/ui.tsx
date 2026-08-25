@@ -11,7 +11,7 @@ export function cx(...classes: Array<string | false | null | undefined>): string
 // Button
 // ---------------------------------------------------------------------------
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'subtle' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
@@ -20,6 +20,7 @@ const BUTTON_VARIANTS: Record<ButtonVariant, string> = {
   ghost: 'text-ink-600 hover:bg-ink-100 hover:text-ink-900',
   danger: 'bg-rose-600 text-white hover:bg-rose-700 disabled:bg-rose-300',
   subtle: 'bg-brand-50 text-brand-700 hover:bg-brand-100',
+  outline: 'bg-white text-brand-700 border border-brand-600 hover:bg-brand-50',
 };
 
 const BUTTON_SIZES: Record<ButtonSize, string> = {
@@ -363,7 +364,7 @@ export function Stars({ value, count, size = 'md' }: { value: number; count?: nu
           <svg
             key={i}
             viewBox="0 0 20 20"
-            className={cx(dimension, i <= Math.round(value) ? 'text-accent-500' : 'text-ink-200')}
+            className={cx(dimension, i <= Math.round(value) ? 'text-brand-500' : 'text-ink-200')}
             fill="currentColor"
             aria-hidden
           >

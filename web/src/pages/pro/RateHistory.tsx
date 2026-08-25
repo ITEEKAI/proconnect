@@ -18,7 +18,7 @@ const ROLE_TONE: Record<RateChange['changed_by_role'], 'brand' | 'warning' | 'ne
 
 const ROLE_LABEL: Record<RateChange['changed_by_role'], string> = {
   professional: 'By you',
-  admin: 'By ProConnect',
+  admin: 'By SimplyServices',
   system: 'Automatic',
 };
 

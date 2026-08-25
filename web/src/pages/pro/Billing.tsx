@@ -57,7 +57,7 @@ export function ProBilling() {
   }
 
   return (
-    <ProShell title="Membership" subtitle="What you pay ProConnect each month, and what you have been invoiced.">
+    <ProShell title="Membership" subtitle="What you pay SimplyServices each month, and what you have been invoiced.">
       <ErrorBanner error={billing.error} />
       {error && (
         <div className="mb-4">

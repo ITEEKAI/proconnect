@@ -219,7 +219,10 @@ function ReviewModal({
           >
             <svg
               viewBox="0 0 20 20"
-              className={cx('size-8 transition', value <= rating ? 'text-accent-500' : 'text-ink-200')}
+              className={cx(
+                'size-8 transition',
+                value <= rating ? 'text-brand-500' : 'text-ink-200',
+              )}
               fill="currentColor"
             >
               <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.78L10 14.77l-5.2 2.73.99-5.78-4.21-4.1 5.82-.85L10 1.5z" />

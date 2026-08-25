@@ -119,7 +119,7 @@ export function Join() {
         <div className="min-w-0">
           <header className="mb-8">
             <h1 className="text-ink-950 text-3xl font-semibold tracking-tight">
-              Apply to join ProConnect
+              Apply to join SimplyServices
             </h1>
             <p className="text-ink-500 mt-2">
               Tell us what you do and what you charge. We verify every applicant before they appear in the

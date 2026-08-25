@@ -1,29 +1,30 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-brand-50: #eef4ff;
-  --color-brand-100: #dae5ff;
-  --color-brand-200: #bcd1ff;
-  --color-brand-300: #8eb2ff;
-  --color-brand-400: #5988fd;
-  --color-brand-500: #345ff8;
-  --color-brand-600: #1f3eed;
-  --color-brand-700: #1a2fd9;
-  --color-brand-800: #1c29b0;
-  --color-brand-900: #1c288b;
-  --color-brand-950: #151a54;
+  /* SimplyServices teal — sampled from the parent webapp */
+  --color-brand-50: #e7f7f4;
+  --color-brand-100: #c8ebe4;
+  --color-brand-200: #96d9cf;
+  --color-brand-300: #5cc4b6;
+  --color-brand-400: #2eb0a0;
+  --color-brand-500: #1aa392;
+  --color-brand-600: #10988a;
+  --color-brand-700: #0c7c72;
+  --color-brand-800: #0a635c;
+  --color-brand-900: #0a524c;
+  --color-brand-950: #042f2c;
 
-  --color-ink-50: #f6f7f9;
-  --color-ink-100: #eceef2;
-  --color-ink-200: #d5dae3;
-  --color-ink-300: #b0bacb;
-  --color-ink-400: #8494ae;
-  --color-ink-500: #647694;
-  --color-ink-600: #4f5e7a;
-  --color-ink-700: #414c63;
-  --color-ink-800: #384153;
-  --color-ink-900: #333947;
-  --color-ink-950: #12151d;
+  --color-ink-50: #f5f7f9;
+  --color-ink-100: #e8edf2;
+  --color-ink-200: #d0d8e2;
+  --color-ink-300: #a7b4c6;
+  --color-ink-400: #7b8ba3;
+  --color-ink-500: #5c6d86;
+  --color-ink-600: #47566c;
+  --color-ink-700: #384557;
+  --color-ink-800: #1c2a3d;
+  --color-ink-900: #101828;
+  --color-ink-950: #081028;
 
   --color-accent-400: #fbbf24;
   --color-accent-500: #f59e0b;
@@ -65,7 +66,7 @@
 }
 
 @utility card {
-  @apply rounded-2xl border border-ink-200/70 bg-white shadow-card;
+  @apply rounded-xl border border-ink-200/70 bg-white shadow-card;
 }
 
 @utility label-text {
