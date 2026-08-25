@@ -29,7 +29,7 @@ const PUBLIC_NAV = [
 ];
 
 export function UserMenu() {
-  const { user, logout } = useAuth();
+  const { user, professional, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -53,7 +53,7 @@ export function UserMenu() {
         onClick={() => setOpen((v) => !v)}
         className="hover:bg-ink-100 flex items-center gap-2 rounded-full py-1 pr-2.5 pl-1 transition"
       >
-        <Avatar name={user.fullName} size="sm" />
+        <Avatar name={user.fullName} size="sm" src={professional?.avatarUrl} />
         <span className="text-ink-800 hidden text-sm font-medium sm:block">{user.fullName.split(' ')[0]}</span>
         <Icons.arrowRight className="text-ink-400 size-3.5 rotate-90" />
       </button>
@@ -76,13 +76,22 @@ export function UserMenu() {
               <Icons.layers className="size-4" /> My dashboard
             </Link>
             {user.role === 'client' && (
-              <Link
-                to="/account"
-                onClick={() => setOpen(false)}
-                className="text-ink-700 hover:bg-ink-50 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
-              >
-                <Icons.calendar className="size-4" /> My bookings
-              </Link>
+              <>
+                <Link
+                  to="/account"
+                  onClick={() => setOpen(false)}
+                  className="text-ink-700 hover:bg-ink-50 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
+                >
+                  <Icons.calendar className="size-4" /> My bookings
+                </Link>
+                <Link
+                  to="/account/invoices"
+                  onClick={() => setOpen(false)}
+                  className="text-ink-700 hover:bg-ink-50 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
+                >
+                  <Icons.card className="size-4" /> Invoices
+                </Link>
+              </>
             )}
             <button
               type="button"

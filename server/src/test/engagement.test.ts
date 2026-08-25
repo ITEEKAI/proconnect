@@ -79,6 +79,27 @@ describe('notifications, messages, availability, avatars and payments', () => {
     assert.ok(clientInbox.body.notifications.some((n: { type: string }) => n.type === 'booking.message'));
   });
 
+  it('notifies both parties when an admin writes on the thread', async () => {
+    const sent = await ctx.request(`/api/bookings/${bookingId}/messages`, {
+      token: adminToken,
+      json: { body: 'Please keep the conversation on this job.' },
+    });
+    assert.equal(sent.status, 201);
+
+    const clientInbox = await ctx.request('/api/notifications', { token: clientToken });
+    const proInbox = await ctx.request('/api/notifications', { token: proToken });
+    assert.ok(
+      clientInbox.body.notifications.some(
+        (n: { type: string; body: string }) => n.type === 'booking.message' && n.body.includes('conversation'),
+      ),
+    );
+    assert.ok(
+      proInbox.body.notifications.some(
+        (n: { type: string; body: string }) => n.type === 'booking.message' && n.body.includes('conversation'),
+      ),
+    );
+  });
+
   it('refuses a stranger from reading the thread', async () => {
     const other = await ctx.login('megan.foster@example.com', 'password123');
     const res = await ctx.request(`/api/bookings/${bookingId}/messages`, { token: other });
@@ -147,6 +168,23 @@ describe('notifications, messages, availability, avatars and payments', () => {
     const file = await fetch(`${ctx.url}${url}`);
     assert.equal(file.status, 200);
     assert.match(file.headers.get('content-type') ?? '', /image\/png/);
+  });
+
+  it('lets a professional update credentials and remove their photo', async () => {
+    const saved = await ctx.request('/api/professional/profile', {
+      method: 'PATCH',
+      token: proToken,
+      json: {
+        credentials: [{ label: '18th Edition Wiring Regulations', issuer: 'City & Guilds', year: 2022 }],
+      },
+    });
+    assert.equal(saved.status, 200);
+    assert.equal(saved.body.professional.credentials[0].label, '18th Edition Wiring Regulations');
+
+    const removed = await ctx.request('/api/professional/avatar', { method: 'DELETE', token: proToken });
+    assert.equal(removed.status, 200);
+    assert.equal(removed.body.avatarUrl, null);
+    assert.equal(removed.body.professional.avatarUrl, null);
   });
 
   it('lets the client record payment after the job is completed', async () => {

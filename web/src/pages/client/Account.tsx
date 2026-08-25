@@ -5,7 +5,7 @@ import { money } from '../../lib/format';
 import { useAsync } from '../../lib/useAsync';
 import type { Booking } from '../../lib/types';
 import { BookingRow, StatusFilterBar } from '../../components/BookingList';
-import { DashboardShell, ErrorBanner, PageLoader } from '../../components/Layout';
+import { ErrorBanner, PageLoader } from '../../components/Layout';
 import { Icons } from '../../components/icons';
 import {
   Alert,
@@ -17,8 +17,7 @@ import {
   TextArea,
   cx,
 } from '../../components/ui';
-
-const NAV = [{ to: '/account', label: 'My bookings', icon: 'calendar' as const }];
+import { ClientShell } from './ClientShell';
 
 export function Account() {
   const { user } = useAuth();
@@ -58,10 +57,9 @@ export function Account() {
   }
 
   return (
-    <DashboardShell
+    <ClientShell
       title="My bookings"
       subtitle={`Signed in as ${user?.fullName ?? ''}`}
-      nav={NAV}
       actions={
         <LinkButton to="/browse">
           <Icons.search className="size-4" /> Find a professional
@@ -149,7 +147,7 @@ export function Account() {
       </ul>
 
       <ReviewModal booking={reviewing} onClose={() => setReviewing(null)} onDone={() => bookings.reload()} />
-    </DashboardShell>
+    </ClientShell>
   );
 }
 

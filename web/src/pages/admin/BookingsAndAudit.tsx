@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { formatDateTime, money, relativeTime } from '../../lib/format';
 import { useAsync } from '../../lib/useAsync';
@@ -103,7 +104,9 @@ export function AdminBookings() {
               {rows.map((booking) => (
                 <tr key={booking.id} className="hover:bg-ink-50/60">
                   <td className="px-5 py-3.5">
-                    <p className="text-ink-950 font-medium">{booking.subject}</p>
+                    <Link to={`/admin/bookings/${booking.id}`} className="text-ink-950 font-medium hover:underline">
+                      {booking.subject}
+                    </Link>
                     <p className="text-ink-400 text-xs">{booking.reference}</p>
                   </td>
                   <td className="text-ink-700 px-5 py-3.5">{booking.client_name}</td>

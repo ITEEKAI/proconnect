@@ -17,6 +17,15 @@ export function ensureUploadsDir(): string {
   return config.uploadsDir;
 }
 
+export function removeAvatarFiles(professionalId: number): void {
+  const dir = path.join(ensureUploadsDir(), 'avatars');
+  if (!fs.existsSync(dir)) return;
+  const prefix = `${professionalId}-`;
+  for (const name of fs.readdirSync(dir)) {
+    if (name.startsWith(prefix)) fs.unlinkSync(path.join(dir, name));
+  }
+}
+
 /** Persist a base64 image and return the public URL served from `/uploads`. */
 export function saveAvatar(professionalId: number, mimeType: string, imageBase64: string): string {
   const ext = ALLOWED[mimeType];
@@ -34,6 +43,7 @@ export function saveAvatar(professionalId: number, mimeType: string, imageBase64
 
   const dir = path.join(ensureUploadsDir(), 'avatars');
   fs.mkdirSync(dir, { recursive: true });
+  removeAvatarFiles(professionalId);
   const filename = `${professionalId}-${Date.now()}.${ext}`;
   fs.writeFileSync(path.join(dir, filename), buffer);
   return `/uploads/avatars/${filename}`;

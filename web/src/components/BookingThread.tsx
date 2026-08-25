@@ -8,6 +8,7 @@ import type { Booking, BookingMessage } from '../lib/types';
 import { STATUS_LABEL, STATUS_TONE } from './BookingList';
 import { Icons } from './icons';
 import { Alert, Avatar, Badge, Button, Card, TextArea, TextInput } from './ui';
+import { JobInvoice } from './JobInvoice';
 
 export function BookingThread({
   bookingId,
@@ -100,6 +101,14 @@ export function BookingThread({
             <p className="text-ink-950 text-lg font-semibold tabular-nums">{money(total, data.currency)}</p>
           </div>
           {data.details && <p className="text-ink-700 mt-4 text-sm leading-relaxed">{data.details}</p>}
+          {data.withinHours === false && (data.status === 'requested' || data.status === 'accepted') && (
+            <div className="mt-4">
+              <Alert tone="warning" title="Outside typical hours">
+                This start time is outside the professional’s published weekly hours. They can still accept, or
+                suggest a different slot in the thread.
+              </Alert>
+            </div>
+          )}
           <dl className="text-ink-600 border-ink-100 mt-5 grid grid-cols-2 gap-3 border-t pt-4 text-sm sm:grid-cols-4">
             <div>
               <dt className="text-ink-400 text-xs">Scheduled</dt>
@@ -124,6 +133,8 @@ export function BookingThread({
             </p>
           )}
         </Card>
+
+        <JobInvoice booking={data} />
 
         <Card className="flex min-h-[22rem] flex-col p-0">
           <div className="border-ink-100 border-b px-5 py-3">

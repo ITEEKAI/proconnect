@@ -30,7 +30,6 @@ Requires Node.js 22.5 or newer (the API uses the built-in `node:sqlite`
 module, so there are no native dependencies to compile).
 
 ```bash
-cd platform
 npm install
 npm run dev
 ```
@@ -66,7 +65,8 @@ lists the three accounts above and fills the form for you.
 - Booking flow that shows the estimate (hours × hourly rate, plus any call-out
   fee) before the request is sent.
 - Client area for tracking requests, cancelling, messaging the professional,
-  recording payment on completed jobs, and reviewing completed work.
+  recording payment on completed jobs, reviewing completed work, and viewing
+  job invoices.
 - Self-service application form that puts a professional into the admin
   verification queue.
 
@@ -81,9 +81,11 @@ lists the three accounts above and fills the form for you.
   credentials, coverage areas and directory visibility.
 - Booking queue: accept, decline, message the client, then complete with the
   hours actually worked. The invoice total uses the rate the job was booked at.
+- Job invoices for completed work, plus the membership tab for monthly fees,
+  plan comparison, plan switching and invoice history.
+- Typical hours on the public profile, with a warning when a request falls
+  outside those hours.
 - In-app notifications for new bookings, messages, verification and fee changes.
-- Membership tab showing the monthly fee, plan comparison, plan switching and
-  invoice history.
 
 ### Admin dashboard
 
@@ -98,12 +100,13 @@ lists the three accounts above and fills the form for you.
   status, suspend the account, raise membership invoices and mark them paid.
 - Plan management, where editing a price re-prices every member on that plan
   and reports how many were affected.
-- Category management, booking oversight and a full audit log.
+- Category management, booking oversight (including the message thread), and a
+  full audit log.
 
 ## Architecture
 
 ```
-platform/
+.
 ├── server/          Express + TypeScript API
 │   └── src/
 │       ├── auth/        scrypt password hashing, HMAC session tokens, guards
@@ -134,7 +137,7 @@ membership billing, and `audit_events` records administrative actions.
 
 ## Commands
 
-Run from `platform/`:
+Run from the repository root:
 
 ```bash
 npm run dev         # API and web app together
@@ -146,7 +149,7 @@ npm run seed        # seed a database manually (add -- --force to reseed)
 
 ## Tests
 
-`npm test` runs 72 integration tests against a freshly seeded in-memory
+`npm test` runs 75 integration tests against a freshly seeded in-memory
 database, covering:
 
 - **auth** — signup, duplicate emails, password rules, tampered tokens, role
@@ -159,9 +162,11 @@ database, covering:
 - **admin** — onboarding, negotiated fees, verification, unlisting, suspension,
   category and plan management, invoicing.
 - **bookings** — rate snapshotting, minimum engagement, permissions, status
-  transitions, hour logging, one review per booking, rating aggregation.
-- **engagement** — in-app notifications, booking messages, weekly availability,
-  local avatar uploads, client job payment, and admin invoice settlement.
+  transitions, hour logging, one review per booking, rating aggregation, and
+  flagging requests that fall outside typical hours.
+- **engagement** — in-app notifications, booking messages (including admin
+  replies), weekly availability, local avatar uploads and removal, credential
+  edits, client job payment, and admin invoice settlement.
 
 ## Configuration
 

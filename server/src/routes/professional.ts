@@ -4,7 +4,7 @@ import { currentUser, requireAuth } from '../auth/middleware.ts';
 import { all, get, run } from '../db/database.ts';
 import { recordAudit } from '../domain/audit.ts';
 import { availabilityDto, parseSlotsInput, replaceSlots } from '../domain/availability.ts';
-import { saveAvatar } from '../domain/avatars.ts';
+import { removeAvatarFiles, saveAvatar } from '../domain/avatars.ts';
 import {
   rateHistory,
   recordRateChange,
@@ -167,6 +167,16 @@ professionalRouter.post(
     const avatarUrl = saveAvatar(profile.id, body.mimeType, body.imageBase64);
     run("UPDATE professionals SET avatar_url = ?, updated_at = datetime('now') WHERE id = ?", avatarUrl, profile.id);
     res.json({ professional: toPrivateDto(requireOwnProfile(currentUser(req).id)), avatarUrl });
+  }),
+);
+
+professionalRouter.delete(
+  '/avatar',
+  asyncHandler((req, res) => {
+    const profile = requireOwnProfile(currentUser(req).id);
+    removeAvatarFiles(profile.id);
+    run("UPDATE professionals SET avatar_url = NULL, updated_at = datetime('now') WHERE id = ?", profile.id);
+    res.json({ professional: toPrivateDto(requireOwnProfile(currentUser(req).id)), avatarUrl: null });
   }),
 );
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ApiError, api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import { formatDate, hoursLabel, locationLabel, money, pluralise } from '../../lib/format';
+import { formatDate, hoursLabel, locationLabel, money, pluralise, scheduledTimeFitsHours } from '../../lib/format';
 import { useAsync } from '../../lib/useAsync';
 import type { AvailabilitySlot, Booking, Professional, Review } from '../../lib/types';
 import { Icons } from '../../components/icons';
@@ -251,6 +251,7 @@ export function ProfilePage() {
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
         professional={pro}
+        availability={availability}
         onBooked={() => profile.reload()}
       />
     </>
@@ -286,11 +287,13 @@ function BookingModal({
   open,
   onClose,
   professional,
+  availability,
   onBooked,
 }: {
   open: boolean;
   onClose: () => void;
   professional: Professional;
+  availability: AvailabilitySlot[];
   onBooked: () => void;
 }) {
   const { user } = useAuth();
@@ -307,6 +310,7 @@ function BookingModal({
   const estimate =
     Math.round(professional.pricing.hourlyRateCents * (Number(hours) || 0)) +
     professional.pricing.calloutFeeCents;
+  const withinHours = scheduledTimeFitsHours(availability, scheduledFor);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -462,6 +466,19 @@ function BookingModal({
             error={error?.fieldError('estimatedHours')}
           />
         </div>
+
+        {availability.length > 0 && (
+          <p className="text-ink-500 text-xs">
+            Typical hours:{' '}
+            {availability.map((slot) => `${slot.weekdayLabel} ${slot.start}–${slot.end}`).join(' · ')}
+          </p>
+        )}
+        {!withinHours && (
+          <Alert tone="warning" title="Outside typical hours">
+            That start time is outside {professional.displayName}’s published weekly hours. You can still send
+            the request — they may suggest another slot.
+          </Alert>
+        )}
 
         <div className="bg-ink-50 border-ink-200 rounded-xl border p-4">
           <p className="text-ink-500 text-xs font-medium tracking-wide uppercase">Your estimate</p>

@@ -1,0 +1,20 @@
+{
+  "name": "ProConnect",
+  "install": "npm install",
+  "terminals": [
+    {
+      "name": "API",
+      "command": "HOST=0.0.0.0 npm run dev -w server",
+      "description": "Express API on port 4000. Creates and seeds SQLite on first boot."
+    },
+    {
+      "name": "Web",
+      "command": "HOST=0.0.0.0 npm run dev -w web",
+      "description": "Vite web app on port 5173. Proxies /api and /uploads to the API."
+    }
+  ],
+  "ports": [
+    { "name": "API", "port": 4000 },
+    { "name": "Web", "port": 5173 }
+  ]
+}

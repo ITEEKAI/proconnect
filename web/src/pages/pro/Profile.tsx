@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ApiError, api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
-import type { AvailabilitySlot, ProfessionalPrivate } from '../../lib/types';
+import type { AvailabilitySlot, Credential, ProfessionalPrivate } from '../../lib/types';
 import { PageLoader } from '../../components/Layout';
 import { Icons } from '../../components/icons';
 import {
@@ -37,6 +37,7 @@ export function ProProfile() {
   const [specialties, setSpecialties] = useState<string[]>([]);
   const [languages, setLanguages] = useState<string[]>([]);
   const [serviceAreas, setServiceAreas] = useState<string[]>([]);
+  const [credentials, setCredentials] = useState<Credential[]>([]);
   const [isPublished, setIsPublished] = useState(false);
   const [hours, setHours] = useState(
     WEEKDAYS.map((_, weekday) => ({ weekday, enabled: weekday < 5, start: '09:00', end: '17:00' })),
@@ -64,6 +65,7 @@ export function ProProfile() {
     setSpecialties(professional.specialties);
     setLanguages(professional.languages);
     setServiceAreas(professional.serviceAreas);
+    setCredentials(professional.credentials.length ? professional.credentials : []);
     setIsPublished(professional.isPublished);
   }, [professional]);
 
@@ -102,6 +104,19 @@ export function ProProfile() {
     setSaved(false);
   }
 
+  async function removeAvatar() {
+    setAvatarBusy(true);
+    setError(null);
+    try {
+      await api('/professional/avatar', { method: 'DELETE' });
+      await refresh();
+    } catch (err) {
+      setError(err instanceof ApiError ? err : new ApiError(500, 'error', 'Could not remove that photo.'));
+    } finally {
+      setAvatarBusy(false);
+    }
+  }
+
   async function uploadAvatar(file: File) {
     setAvatarBusy(true);
     setError(null);
@@ -138,6 +153,7 @@ export function ProProfile() {
           specialties,
           languages,
           serviceAreas,
+          credentials: credentials.filter((item) => item.label.trim()),
           isPublished,
         },
       });
@@ -197,6 +213,16 @@ export function ProProfile() {
                   }}
                 />
               </label>
+              {professional.avatarUrl && (
+                <button
+                  type="button"
+                  className="text-ink-600 ml-3 text-sm font-medium hover:underline"
+                  disabled={avatarBusy}
+                  onClick={() => void removeAvatar()}
+                >
+                  Remove photo
+                </button>
+              )}
               <p className="text-ink-500 mt-2 text-xs">JPEG, PNG, WebP or GIF. Keep it under 1.5 MB.</p>
             </div>
           </div>
@@ -290,6 +316,77 @@ export function ProProfile() {
               </li>
             ))}
           </ul>
+        </Card>
+
+        <Card className="p-6">
+          <h2 className="text-ink-950 mb-2 font-semibold">Credentials and accreditations</h2>
+          <p className="text-ink-500 mb-4 text-sm">
+            Shown on your public profile. Our team checks these when they verify you.
+          </p>
+          <ul className="space-y-3">
+            {credentials.map((credential, index) => (
+              <li key={index} className="grid gap-3 sm:grid-cols-[1fr_1fr_6rem_auto]">
+                <TextInput
+                  label={index === 0 ? 'Credential' : undefined}
+                  placeholder="e.g. Gas Safe Registered"
+                  value={credential.label}
+                  onChange={(e) => {
+                    setCredentials((current) =>
+                      current.map((item, i) => (i === index ? { ...item, label: e.target.value } : item)),
+                    );
+                    setSaved(false);
+                  }}
+                />
+                <TextInput
+                  label={index === 0 ? 'Issuer' : undefined}
+                  placeholder="e.g. Gas Safe Register"
+                  value={credential.issuer}
+                  onChange={(e) => {
+                    setCredentials((current) =>
+                      current.map((item, i) => (i === index ? { ...item, issuer: e.target.value } : item)),
+                    );
+                    setSaved(false);
+                  }}
+                />
+                <TextInput
+                  label={index === 0 ? 'Year' : undefined}
+                  type="number"
+                  min={1900}
+                  max={2100}
+                  value={credential.year ?? ''}
+                  onChange={(e) => {
+                    const year = e.target.value === '' ? null : Number(e.target.value);
+                    setCredentials((current) =>
+                      current.map((item, i) => (i === index ? { ...item, year } : item)),
+                    );
+                    setSaved(false);
+                  }}
+                />
+                <button
+                  type="button"
+                  className="text-ink-500 hover:text-rose-700 self-end pb-2 text-sm"
+                  onClick={() => {
+                    setCredentials((current) => current.filter((_, i) => i !== index));
+                    setSaved(false);
+                  }}
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="mt-4"
+            onClick={() => {
+              setCredentials((current) => [...current, { label: '', issuer: '', year: null }]);
+              setSaved(false);
+            }}
+          >
+            Add credential
+          </Button>
         </Card>
 
         <Card className="p-6">
