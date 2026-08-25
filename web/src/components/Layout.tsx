@@ -77,10 +77,10 @@ export function UserMenu() {
         <LinkButton to="/login" variant="ghost" size="sm">
           Login
         </LinkButton>
-        <LinkButton to="/browse" size="sm" className="hidden sm:inline-flex">
+        <LinkButton to="/browse" size="sm" className="max-sm:hidden">
           Find a professional
         </LinkButton>
-        <LinkButton to="/join" variant="outline" size="sm" className="hidden md:inline-flex">
+        <LinkButton to="/join" variant="outline" size="sm" className="max-md:hidden">
           Join as a professional
         </LinkButton>
       </div>
