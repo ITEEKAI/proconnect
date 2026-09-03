@@ -10,8 +10,10 @@ if (config.isProduction && config.usingDefaultAuthSecret) {
   console.warn('[api] AUTH_SECRET is using the development default. Set a real secret before going live.');
 }
 
-createApp().listen(config.port, config.host, () => {
-  console.log(`[api] SimplyServices listening on http://${config.host}:${config.port}`);
+const port = Number(process.env.PORT) || 4000;
+
+createApp().listen(port, '0.0.0.0', () => {
+  console.log(`[api] ProConnect API listening on port ${port}`);
   console.log(`[api] Payments: ${config.paymentsProvider}`);
   console.log(`[api] Database: ${config.databasePath}`);
 });
