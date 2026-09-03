@@ -12,9 +12,13 @@ import { ProfilePage } from './pages/public/ProfilePage';
 import { Login, Signup } from './pages/public/Auth';
 import { ForProfessionals, HowItWorks } from './pages/public/ForProfessionals';
 import { Join } from './pages/public/Join';
+import { CheckoutPage } from './pages/public/Checkout';
 
 import { Account } from './pages/client/Account';
 import { ClientBookingDetail } from './pages/client/BookingDetail';
+import { ClientInvoices } from './pages/client/Invoices';
+import { ClientNotifications } from './pages/client/Notifications';
+import { ClientSettings } from './pages/client/Settings';
 
 import { ProOverview } from './pages/pro/Overview';
 import { ProRates } from './pages/pro/Rates';
@@ -22,6 +26,8 @@ import { ProProfile } from './pages/pro/Profile';
 import { ProBookings } from './pages/pro/Bookings';
 import { ProBookingDetail } from './pages/pro/BookingDetail';
 import { ProBilling } from './pages/pro/Billing';
+import { ProJobInvoices } from './pages/pro/JobInvoices';
+import { ProNotifications } from './pages/pro/Notifications';
 
 import { AdminOverviewPage } from './pages/admin/Overview';
 import { AdminProfessionals } from './pages/admin/Professionals';
@@ -30,6 +36,8 @@ import { AdminProfessionalDetail } from './pages/admin/ProfessionalDetail';
 import { AdminPlans } from './pages/admin/Plans';
 import { AdminCategories } from './pages/admin/Categories';
 import { AdminAudit, AdminBookings } from './pages/admin/BookingsAndAudit';
+import { AdminBookingDetail } from './pages/admin/BookingDetail';
+import { AdminNotifications } from './pages/admin/Notifications';
 
 function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -69,6 +77,14 @@ export function App() {
           <Route path="/for-professionals" element={<ForProfessionals />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/join" element={<Join />} />
+          <Route
+            path="/checkout/:sessionId"
+            element={
+              <RequireRole roles={['client', 'professional']}>
+                <CheckoutPage />
+              </RequireRole>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<NotFound />} />
@@ -87,6 +103,30 @@ export function App() {
           element={
             <RequireRole roles={['client']}>
               <ClientBookingDetail />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/account/invoices"
+          element={
+            <RequireRole roles={['client']}>
+              <ClientInvoices />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/account/notifications"
+          element={
+            <RequireRole roles={['client']}>
+              <ClientNotifications />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/account/settings"
+          element={
+            <RequireRole roles={['client']}>
+              <ClientSettings />
             </RequireRole>
           }
         />
@@ -136,6 +176,22 @@ export function App() {
           element={
             <RequireRole roles={['professional']}>
               <ProBilling />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/dashboard/invoices"
+          element={
+            <RequireRole roles={['professional']}>
+              <ProJobInvoices />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/dashboard/notifications"
+          element={
+            <RequireRole roles={['professional']}>
+              <ProNotifications />
             </RequireRole>
           }
         />
@@ -193,6 +249,22 @@ export function App() {
           element={
             <RequireRole roles={['admin']}>
               <AdminBookings />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/admin/bookings/:id"
+          element={
+            <RequireRole roles={['admin']}>
+              <AdminBookingDetail />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <RequireRole roles={['admin']}>
+              <AdminNotifications />
             </RequireRole>
           }
         />

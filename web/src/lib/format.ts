@@ -89,3 +89,24 @@ export function hoursLabel(value: number | string | null | undefined): string {
 export function locationLabel(location: { city: string; region: string; country: string }): string {
   return [location.city, location.region].filter(Boolean).join(', ') || location.country || 'Remote';
 }
+
+/** Whether a datetime-local value falls inside published weekday hours (0 = Monday). */
+export function scheduledTimeFitsHours(
+  slots: Array<{ weekday: number; start: string; end: string }>,
+  scheduledFor: string,
+): boolean {
+  if (slots.length === 0) return true;
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(scheduledFor);
+  if (!match) return true;
+  const utc = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  const jsDay = utc.getUTCDay();
+  const weekday = jsDay === 0 ? 6 : jsDay - 1;
+  const minute = Number(match[4]) * 60 + Number(match[5]);
+  const slot = slots.find((item) => item.weekday === weekday);
+  if (!slot) return false;
+  const startParts = slot.start.split(':').map(Number);
+  const endParts = slot.end.split(':').map(Number);
+  const start = (startParts[0] ?? 0) * 60 + (startParts[1] ?? 0);
+  const end = (endParts[0] ?? 0) * 60 + (endParts[1] ?? 0);
+  return minute >= start && minute < end;
+}

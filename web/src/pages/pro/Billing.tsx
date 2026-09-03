@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { useAuth } from '../../lib/auth';
 import { formatDate, money, percentFromBps } from '../../lib/format';
@@ -30,7 +31,25 @@ export function ProBilling() {
   const { refresh } = useAuth();
   const billing = useAsync(() => api<BillingResponse>('/professional/billing'));
   const [switching, setSwitching] = useState<number | null>(null);
+  const [payingId, setPayingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [params, setParams] = useSearchParams();
+  const handledCheckout = useRef<string | null>(null);
+  const checkoutState = params.get('checkout');
+  const checkoutSessionId = params.get('session_id');
+
+  useEffect(() => {
+    if (checkoutState !== 'success' || !checkoutSessionId) return;
+    if (handledCheckout.current === checkoutSessionId) return;
+    handledCheckout.current = checkoutSessionId;
+    void api('/payments/confirm', { body: { sessionId: checkoutSessionId } }).finally(() => {
+      billing.reload();
+      const next = new URLSearchParams(params);
+      next.delete('checkout');
+      next.delete('session_id');
+      setParams(next, { replace: true });
+    });
+  }, [checkoutState, checkoutSessionId, params, setParams, billing]);
 
   if (billing.loading) {
     return (
@@ -56,12 +75,31 @@ export function ProBilling() {
     }
   }
 
+  async function payInvoice(invoiceId: number) {
+    setPayingId(invoiceId);
+    setError(null);
+    try {
+      const result = await api<{ url: string }>(`/professional/invoices/${invoiceId}/pay`, { body: {} });
+      window.location.assign(result.url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not start checkout.');
+      setPayingId(null);
+    }
+  }
+
   return (
-    <ProShell title="Membership" subtitle="What you pay ProConnect each month, and what you have been invoiced.">
+    <ProShell title="Membership" subtitle="What you pay SimplyServices each month, and what you have been invoiced.">
       <ErrorBanner error={billing.error} />
       {error && (
         <div className="mb-4">
           <Alert tone="danger">{error}</Alert>
+        </div>
+      )}
+      {checkoutState === 'cancel' && (
+        <div className="mb-4">
+          <Alert tone="warning" title="Checkout cancelled">
+            No payment was taken. You can pay the invoice when you are ready.
+          </Alert>
         </div>
       )}
 
@@ -183,12 +221,13 @@ export function ProBilling() {
                     <th className="px-5 py-3 font-medium">Period</th>
                     <th className="px-5 py-3 font-medium">Amount</th>
                     <th className="px-5 py-3 font-medium">Status</th>
+                    <th className="px-5 py-3 font-medium"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-ink-100 divide-y">
                   {data.invoices.length === 0 && (
                     <tr>
-                      <td colSpan={3} className="text-ink-500 px-5 py-8 text-center">
+                      <td colSpan={4} className="text-ink-500 px-5 py-8 text-center">
                         No invoices yet.
                       </td>
                     </tr>
@@ -203,6 +242,17 @@ export function ProBilling() {
                       </td>
                       <td className="px-5 py-3">
                         <Badge tone={STATUS_TONE[invoice.status]}>{invoice.status}</Badge>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        {invoice.status === 'due' && (
+                          <Button
+                            size="sm"
+                            loading={payingId === invoice.id}
+                            onClick={() => void payInvoice(invoice.id)}
+                          >
+                            Pay now
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}

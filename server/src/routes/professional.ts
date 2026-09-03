@@ -4,7 +4,7 @@ import { currentUser, requireAuth } from '../auth/middleware.ts';
 import { all, get, run } from '../db/database.ts';
 import { recordAudit } from '../domain/audit.ts';
 import { availabilityDto, parseSlotsInput, replaceSlots } from '../domain/availability.ts';
-import { saveAvatar } from '../domain/avatars.ts';
+import { removeAvatarFiles, saveAvatar } from '../domain/avatars.ts';
 import {
   rateHistory,
   recordRateChange,
@@ -13,6 +13,7 @@ import {
 } from '../domain/professionals.ts';
 import { ApiError } from '../lib/errors.ts';
 import { asyncHandler, parseBody } from '../lib/http.ts';
+import { startCheckout } from '../payments/checkout.ts';
 
 export const professionalRouter = Router();
 professionalRouter.use(requireAuth('professional'));
@@ -167,6 +168,16 @@ professionalRouter.post(
     const avatarUrl = saveAvatar(profile.id, body.mimeType, body.imageBase64);
     run("UPDATE professionals SET avatar_url = ?, updated_at = datetime('now') WHERE id = ?", avatarUrl, profile.id);
     res.json({ professional: toPrivateDto(requireOwnProfile(currentUser(req).id)), avatarUrl });
+  }),
+);
+
+professionalRouter.delete(
+  '/avatar',
+  asyncHandler((req, res) => {
+    const profile = requireOwnProfile(currentUser(req).id);
+    removeAvatarFiles(profile.id);
+    run("UPDATE professionals SET avatar_url = NULL, updated_at = datetime('now') WHERE id = ?", profile.id);
+    res.json({ professional: toPrivateDto(requireOwnProfile(currentUser(req).id)), avatarUrl: null });
   }),
 );
 
@@ -332,5 +343,42 @@ professionalRouter.post(
     recordAudit(user, 'plan.switch', 'professional', profile.id, `Switched to ${plan.name}`);
 
     res.json({ professional: toPrivateDto(requireOwnProfile(user.id)) });
+  }),
+);
+
+professionalRouter.post(
+  '/invoices/:id/pay',
+  asyncHandler(async (req, res) => {
+    const user = currentUser(req);
+    const profile = requireOwnProfile(user.id);
+    const invoice = get<{
+      id: number;
+      status: string;
+      amount_cents: number;
+      currency: string;
+      period_start: string;
+      period_end: string;
+    }>(
+      `SELECT id, status, amount_cents, currency, period_start, period_end
+       FROM subscription_invoices WHERE id = ? AND professional_id = ?`,
+      Number(req.params.id),
+      profile.id,
+    );
+    if (!invoice) throw ApiError.notFound('Invoice not found.');
+    if (invoice.status === 'paid') throw ApiError.badRequest('This invoice is already paid.');
+    if (invoice.status === 'void') throw ApiError.badRequest('That invoice has been voided.');
+
+    const checkout = await startCheckout({
+      kind: 'membership',
+      invoiceId: invoice.id,
+      payerUserId: user.id,
+      customerEmail: user.email,
+      amountCents: invoice.amount_cents,
+      currency: invoice.currency,
+      description: `SimplyServices membership ${invoice.period_start} – ${invoice.period_end}`,
+      successPath: '/dashboard/billing',
+      cancelPath: '/dashboard/billing',
+    });
+    res.json(checkout);
   }),
 );

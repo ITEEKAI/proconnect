@@ -7,6 +7,7 @@ const NAV = [
   { to: '/admin/plans', label: 'Plans & fees', icon: 'card' as const },
   { to: '/admin/categories', label: 'Categories', icon: 'tag' as const },
   { to: '/admin/bookings', label: 'Bookings', icon: 'calendar' as const },
+  { to: '/admin/notifications', label: 'Notifications', icon: 'bell' as const },
   { to: '/admin/audit', label: 'Audit log', icon: 'history' as const },
 ];
 

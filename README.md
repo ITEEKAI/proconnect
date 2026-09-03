@@ -1,7 +1,9 @@
 # ProConnect
 
-A marketplace that connects people who need professional help with vetted
-lawyers, tradespeople, accountants, real estate agents, coaches and more.
+The SimplyServices professional marketplace. It connects people who need
+help with vetted lawyers, tradespeople, accountants, real estate agents,
+coaches and more — branded to the SimplyServices webapp, with hourly-rate
+booking rather than a three-quote lead auction.
 
 It has three surfaces:
 
@@ -30,7 +32,6 @@ Requires Node.js 22.5 or newer (the API uses the built-in `node:sqlite`
 module, so there are no native dependencies to compile).
 
 ```bash
-cd platform
 npm install
 npm run dev
 ```
@@ -66,7 +67,8 @@ lists the three accounts above and fills the form for you.
 - Booking flow that shows the estimate (hours × hourly rate, plus any call-out
   fee) before the request is sent.
 - Client area for tracking requests, cancelling, messaging the professional,
-  recording payment on completed jobs, and reviewing completed work.
+  recording payment on completed jobs, reviewing completed work, and viewing
+  job invoices.
 - Self-service application form that puts a professional into the admin
   verification queue.
 
@@ -81,9 +83,11 @@ lists the three accounts above and fills the form for you.
   credentials, coverage areas and directory visibility.
 - Booking queue: accept, decline, message the client, then complete with the
   hours actually worked. The invoice total uses the rate the job was booked at.
+- Job invoices for completed work, plus the membership tab for monthly fees,
+  plan comparison, plan switching and invoice history.
+- Typical hours on the public profile, with a warning when a request falls
+  outside those hours.
 - In-app notifications for new bookings, messages, verification and fee changes.
-- Membership tab showing the monthly fee, plan comparison, plan switching and
-  invoice history.
 
 ### Admin dashboard
 
@@ -98,12 +102,13 @@ lists the three accounts above and fills the form for you.
   status, suspend the account, raise membership invoices and mark them paid.
 - Plan management, where editing a price re-prices every member on that plan
   and reports how many were affected.
-- Category management, booking oversight and a full audit log.
+- Category management, booking oversight (including the message thread), and a
+  full audit log.
 
 ## Architecture
 
 ```
-platform/
+.
 ├── server/          Express + TypeScript API
 │   └── src/
 │       ├── auth/        scrypt password hashing, HMAC session tokens, guards
@@ -134,7 +139,7 @@ membership billing, and `audit_events` records administrative actions.
 
 ## Commands
 
-Run from `platform/`:
+Run from the repository root:
 
 ```bash
 npm run dev         # API and web app together
@@ -146,7 +151,7 @@ npm run seed        # seed a database manually (add -- --force to reseed)
 
 ## Tests
 
-`npm test` runs 72 integration tests against a freshly seeded in-memory
+`npm test` runs 75 integration tests against a freshly seeded in-memory
 database, covering:
 
 - **auth** — signup, duplicate emails, password rules, tampered tokens, role
@@ -159,9 +164,11 @@ database, covering:
 - **admin** — onboarding, negotiated fees, verification, unlisting, suspension,
   category and plan management, invoicing.
 - **bookings** — rate snapshotting, minimum engagement, permissions, status
-  transitions, hour logging, one review per booking, rating aggregation.
-- **engagement** — in-app notifications, booking messages, weekly availability,
-  local avatar uploads, client job payment, and admin invoice settlement.
+  transitions, hour logging, one review per booking, rating aggregation, and
+  flagging requests that fall outside typical hours.
+- **engagement** — in-app notifications, booking messages (including admin
+  replies), weekly availability, local avatar uploads and removal, credential
+  edits, client job payment, and admin invoice settlement.
 
 ## Configuration
 
@@ -169,17 +176,59 @@ database, covering:
 | --- | --- | --- |
 | `PORT` | `4000` | API port |
 | `HOST` | `127.0.0.1` | API bind address |
-| `DATABASE_PATH` | `server/data/proconnect.db` | SQLite file |
-| `UPLOADS_DIR` | `server/data/uploads` | Local avatar files |
+| `DATABASE_PATH` | `server/data/proconnect.db` (or `/data/…` if `/data` exists) | SQLite file |
+| `UPLOADS_DIR` | `server/data/uploads` (or `/data/uploads`) | Local avatar files |
+| `DATA_DIR` | unset | If set (or `/data` exists), database and uploads live there — use this on Railway |
 | `AUTH_SECRET` | development default | Session token signing key |
 | `TOKEN_TTL_SECONDS` | `43200` | Session lifetime |
 | `API_PROXY_TARGET` | `http://127.0.0.1:4000` | Where Vite proxies `/api` and `/uploads` |
+| `PUBLIC_URL` | `http://127.0.0.1:5173` in dev | Public origin for checkout redirects (required for Stripe) |
+| `STRIPE_SECRET_KEY` | unset | When set, job and membership payments use Stripe Checkout |
+| `STRIPE_WEBHOOK_SECRET` | unset | Verifies `checkout.session.completed` webhooks |
+| `WEB_DIST` | `web/dist` | Production SPA files served by the API |
 
 `AUTH_SECRET` must be set to a real secret outside local development.
 
+### Payments
+
+Without Stripe keys the app uses a **test checkout** at `/checkout/:sessionId` (card `4242…`, no real charge). That is what local demo and Cloud Agent environments run.
+
+When `STRIPE_SECRET_KEY` is set (start with `sk_test_…`):
+
+1. Joe Public clicks **Pay** on a completed job and is sent to Stripe Checkout.
+2. The professional clicks **Pay now** on a due membership invoice and is sent to Stripe Checkout.
+3. Stripe redirects back; a webhook (and a confirm-on-return call) marks the invoice paid.
+
+Commission on completed jobs is stored on the booking when the job is paid. Stripe Connect (automatic splits to professionals) is the next payment step after test/live Checkout is working.
+
+### Production (Railway)
+
+Railway is the intended host: one Docker service, HTTPS URL, persistent volume for SQLite and avatars.
+
+1. Create a project at [railway.app](https://railway.app) and connect this GitHub repo (`ITEEKAI/proconnect`).
+2. Railway will build the `Dockerfile` (`railway.toml` selects it).
+3. Add a **volume** mounted at `/data` so the database and uploads survive deploys.
+4. Set these variables in the service:
+
+| Variable | Value |
+| --- | --- |
+| `AUTH_SECRET` | A long random string (`openssl rand -hex 32`) |
+| `PUBLIC_URL` | Your live origin, e.g. `https://app.simplyservices.com` (optional on first boot — Railway’s `*.up.railway.app` domain is used if unset) |
+| `STRIPE_SECRET_KEY` | Leave empty for test checkout; add `sk_test_…` then live keys when ready |
+| `STRIPE_WEBHOOK_SECRET` | From the Stripe dashboard webhook (`https://YOUR_DOMAIN/api/stripe/webhook`) |
+
+`PORT` and `HOST` are handled for you. Data files default to `/data/proconnect.db` and `/data/uploads` when that volume exists.
+
+5. Generate a domain (Railway → Settings → Networking) or attach `app.simplyservices.com`.
+6. Put that URL on a header/hero button (and QR codes) on the SimplyServices Hostinger site.
+
+Local equivalent:
+
+```bash
+npm run build
+NODE_ENV=production HOST=0.0.0.0 PUBLIC_URL=https://app.example.com AUTH_SECRET=… npm start
+```
+
 ## Not included
 
-This is a working product build, not a production deployment. Payments are
-modelled (fees, commissions, invoices and a client “record payment” action)
-but no card processor is wired up, and there is no email delivery. Avatar
-photos are stored on the local disk under `/uploads`.
+Card payouts to professionals (Stripe Connect), email delivery, and a live card processor until you add Stripe keys. Avatar photos are stored on the local disk under `/uploads`.

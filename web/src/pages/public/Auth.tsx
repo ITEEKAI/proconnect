@@ -172,7 +172,7 @@ export function Signup() {
               ['One place for everything', 'Requests, accepted jobs, logged hours and reviews together.'],
             ].map(([title, body]) => (
               <li key={title} className="flex gap-3">
-                <span className="mt-0.5 rounded-lg bg-emerald-50 p-1.5 text-emerald-600">
+                <span className="bg-brand-50 text-brand-600 mt-0.5 rounded-lg p-1.5">
                   <Icons.check className="size-4" />
                 </span>
                 <div>

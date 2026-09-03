@@ -130,7 +130,7 @@ export function HowItWorks() {
   return (
     <div className="container-page py-14 lg:py-20">
       <header className="mx-auto max-w-2xl text-center">
-        <h1 className="text-ink-950 text-4xl font-semibold tracking-tight">How ProConnect works</h1>
+        <h1 className="text-ink-950 text-4xl font-semibold tracking-tight">How SimplyServices works</h1>
         <p className="text-ink-500 mt-4 text-lg">
           A marketplace built around one idea: you should know the hourly rate before you make contact.
         </p>
@@ -195,6 +195,10 @@ export function HowItWorks() {
             [
               'What happens if a rate changes after I book?',
               'Nothing. Your booking stores the rate that was advertised when you sent the request, and the final invoice uses that figure.',
+            ],
+            [
+              'How do I pay?',
+              'After the professional logs the hours, you pay the job invoice by card. Until Stripe live keys are added, the app uses a test checkout (card 4242…). Professionals pay their monthly membership the same way from Membership.',
             ],
             [
               'What does the professional pay?',

@@ -91,3 +91,39 @@ export function parseSlotsInput(
 export function availabilityDto(professionalId: number) {
   return listSlots(professionalId).map(toAvailabilityDto);
 }
+
+/**
+ * Parse a datetime-local / ISO wall-clock string without applying a timezone.
+ * Weekday uses the same 0 = Monday … 6 = Sunday convention as `availability_slots`.
+ */
+export function parseWallClock(value: string): { weekday: number; minute: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(value.trim());
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  if (month < 1 || month > 12 || day < 1 || day > 31 || hour > 23 || minute > 59) return null;
+  const utc = new Date(Date.UTC(year, month - 1, day));
+  if (utc.getUTCFullYear() !== year || utc.getUTCMonth() !== month - 1 || utc.getUTCDate() !== day) {
+    return null;
+  }
+  const jsDay = utc.getUTCDay();
+  const weekday = jsDay === 0 ? 6 : jsDay - 1;
+  return { weekday, minute: hour * 60 + minute };
+}
+
+/** True when the professional has no hours, or the requested start falls inside a slot. */
+export function fitsAvailability(slots: AvailabilitySlot[], scheduledFor: string): boolean {
+  if (slots.length === 0) return true;
+  const parsed = parseWallClock(scheduledFor);
+  if (!parsed) return true;
+  const slot = slots.find((item) => item.weekday === parsed.weekday);
+  if (!slot) return false;
+  return parsed.minute >= slot.startMinute && parsed.minute < slot.endMinute;
+}
+
+export function professionalFitsAvailability(professionalId: number, scheduledFor: string): boolean {
+  return fitsAvailability(listSlots(professionalId), scheduledFor);
+}

@@ -2,11 +2,13 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { currentUser, requireAuth } from '../auth/middleware.ts';
 import { all, get, run } from '../db/database.ts';
+import { professionalFitsAvailability } from '../domain/availability.ts';
 import { notify } from '../domain/notifications.ts';
 import { findById, recalculateRating, requireOwnProfile } from '../domain/professionals.ts';
 import { ApiError } from '../lib/errors.ts';
 import { bookingReference } from '../lib/format.ts';
 import { asyncHandler, parseBody } from '../lib/http.ts';
+import { startCheckout } from '../payments/checkout.ts';
 
 export const bookingsRouter = Router();
 bookingsRouter.use(requireAuth());
@@ -68,6 +70,7 @@ function toDto(row: BookingRow) {
     totalCents: row.total_cents,
     paymentStatus: row.payment_status ?? 'unpaid',
     professionalNote: row.professional_note,
+    withinHours: professionalFitsAvailability(row.professional_id, row.scheduled_for),
     createdAt: row.created_at,
     client: { id: row.client_id, name: row.client_name },
     professional: {
@@ -317,14 +320,31 @@ bookingsRouter.post(
       user.id,
       body.body,
     );
-    const otherId = user.id === row.client_id ? row.professional_user_id : row.client_id;
-    notify(
-      otherId,
-      'booking.message',
-      `New message on ${row.reference}`,
-      body.body.slice(0, 140),
-      user.id === row.client_id ? `/dashboard/bookings/${row.id}` : `/account/bookings/${row.id}`,
-    );
+    if (user.role === 'admin') {
+      notify(
+        row.client_id,
+        'booking.message',
+        `New message on ${row.reference}`,
+        body.body.slice(0, 140),
+        `/account/bookings/${row.id}`,
+      );
+      notify(
+        row.professional_user_id,
+        'booking.message',
+        `New message on ${row.reference}`,
+        body.body.slice(0, 140),
+        `/dashboard/bookings/${row.id}`,
+      );
+    } else {
+      const otherId = user.id === row.client_id ? row.professional_user_id : row.client_id;
+      notify(
+        otherId,
+        'booking.message',
+        `New message on ${row.reference}`,
+        body.body.slice(0, 140),
+        user.id === row.client_id ? `/dashboard/bookings/${row.id}` : `/account/bookings/${row.id}`,
+      );
+    }
     const saved = get<MessageRow>(
       `SELECT m.*, u.full_name AS author_name, u.role AS author_role
        FROM booking_messages m JOIN users u ON u.id = m.sender_id
@@ -338,22 +358,26 @@ bookingsRouter.post(
 bookingsRouter.post(
   '/:id/pay',
   requireAuth('client'),
-  asyncHandler((req, res) => {
+  asyncHandler(async (req, res) => {
     const row = loadForActor(req, Number(req.params.id));
     if (row.status !== 'completed') {
       throw ApiError.badRequest('Payment is only available after the job is completed.');
     }
     if (row.payment_status === 'paid') throw ApiError.badRequest('This booking is already paid.');
-    run(`UPDATE bookings SET payment_status = 'paid', updated_at = datetime('now') WHERE id = ?`, row.id);
-    const updated = get<BookingRow>(`${BOOKING_SELECT} WHERE b.id = ?`, row.id);
-    notify(
-      row.professional_user_id,
-      'booking.paid',
-      `${row.reference} was marked paid`,
-      `${currentUser(req).full_name} recorded payment.`,
-      `/dashboard/bookings/${row.id}`,
-    );
-    res.json({ booking: updated && toDto(updated) });
+    const user = currentUser(req);
+    const amount = row.total_cents ?? Math.round(row.hourly_rate_cents * row.estimated_hours) + row.callout_fee_cents;
+    const checkout = await startCheckout({
+      kind: 'booking',
+      bookingId: row.id,
+      payerUserId: user.id,
+      customerEmail: user.email,
+      amountCents: amount,
+      currency: row.currency,
+      description: `${row.reference} · ${row.subject}`,
+      successPath: `/account/bookings/${row.id}`,
+      cancelPath: `/account/bookings/${row.id}`,
+    });
+    res.json(checkout);
   }),
 );
 

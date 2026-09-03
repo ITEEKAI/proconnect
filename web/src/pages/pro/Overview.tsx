@@ -87,7 +87,7 @@ export function ProOverview() {
             <Stat
               label="Lifetime earnings"
               value={money(data.metrics.lifetimeEarningsCents, pro.pricing.currency)}
-              sub="Billed through ProConnect"
+              sub="Billed through SimplyServices"
               tone="neutral"
               icon={<Icons.chart className="size-4" />}
             />

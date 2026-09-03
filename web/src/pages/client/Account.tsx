@@ -5,7 +5,7 @@ import { money } from '../../lib/format';
 import { useAsync } from '../../lib/useAsync';
 import type { Booking } from '../../lib/types';
 import { BookingRow, StatusFilterBar } from '../../components/BookingList';
-import { DashboardShell, ErrorBanner, PageLoader } from '../../components/Layout';
+import { ErrorBanner, PageLoader } from '../../components/Layout';
 import { Icons } from '../../components/icons';
 import {
   Alert,
@@ -17,8 +17,7 @@ import {
   TextArea,
   cx,
 } from '../../components/ui';
-
-const NAV = [{ to: '/account', label: 'My bookings', icon: 'calendar' as const }];
+import { ClientShell } from './ClientShell';
 
 export function Account() {
   const { user } = useAuth();
@@ -58,10 +57,9 @@ export function Account() {
   }
 
   return (
-    <DashboardShell
+    <ClientShell
       title="My bookings"
       subtitle={`Signed in as ${user?.fullName ?? ''}`}
-      nav={NAV}
       actions={
         <LinkButton to="/browse">
           <Icons.search className="size-4" /> Find a professional
@@ -121,7 +119,7 @@ export function Account() {
                 </LinkButton>
                 {booking.status === 'completed' && booking.paymentStatus !== 'paid' && (
                   <LinkButton size="sm" to={`/account/bookings/${booking.id}`}>
-                    Record payment
+                    Pay now
                   </LinkButton>
                 )}
                 {booking.status === 'completed' && (
@@ -149,7 +147,7 @@ export function Account() {
       </ul>
 
       <ReviewModal booking={reviewing} onClose={() => setReviewing(null)} onDone={() => bookings.reload()} />
-    </DashboardShell>
+    </ClientShell>
   );
 }
 
@@ -221,7 +219,10 @@ function ReviewModal({
           >
             <svg
               viewBox="0 0 20 20"
-              className={cx('size-8 transition', value <= rating ? 'text-accent-500' : 'text-ink-200')}
+              className={cx(
+                'size-8 transition',
+                value <= rating ? 'text-brand-500' : 'text-ink-200',
+              )}
               fill="currentColor"
             >
               <path d="M10 1.5l2.6 5.27 5.82.85-4.21 4.1.99 5.78L10 14.77l-5.2 2.73.99-5.78-4.21-4.1 5.82-.85L10 1.5z" />

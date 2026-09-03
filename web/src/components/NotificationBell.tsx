@@ -42,6 +42,13 @@ export function NotificationBell() {
 
   if (!user) return null;
 
+  const inboxPath =
+    user.role === 'admin'
+      ? '/admin/notifications'
+      : user.role === 'professional'
+        ? '/dashboard/notifications'
+        : '/account/notifications';
+
   async function mark(ids?: number[]) {
     const result = await api<{ unread: number }>('/notifications/read', { body: { ids } });
     setInbox((current) => ({
@@ -116,6 +123,18 @@ export function NotificationBell() {
                 </li>
               ))}
             </ul>
+            <div className="border-ink-100 border-t px-4 py-2.5">
+              <button
+                type="button"
+                className="text-brand-700 text-xs font-medium"
+                onClick={() => {
+                  setOpen(false);
+                  navigate(inboxPath);
+                }}
+              >
+                See all notifications
+              </button>
+            </div>
           </div>
         </>
       )}

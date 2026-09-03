@@ -126,6 +126,7 @@ export interface Booking {
   totalCents: number | null;
   paymentStatus: PaymentStatus;
   professionalNote: string | null;
+  withinHours: boolean;
   createdAt: string;
   client: { id: number; name: string };
   professional: { id: number; slug: string; name: string; category: string };

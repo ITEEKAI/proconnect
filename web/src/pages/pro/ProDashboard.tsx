@@ -6,9 +6,11 @@ import { Badge } from '../../components/ui';
 const NAV = [
   { to: '/dashboard', label: 'Overview', icon: 'layers' as const, end: true },
   { to: '/dashboard/bookings', label: 'Bookings', icon: 'calendar' as const },
+  { to: '/dashboard/invoices', label: 'Job invoices', icon: 'history' as const },
   { to: '/dashboard/rates', label: 'My rates', icon: 'tag' as const },
   { to: '/dashboard/profile', label: 'Profile', icon: 'briefcase' as const },
   { to: '/dashboard/billing', label: 'Membership', icon: 'card' as const },
+  { to: '/dashboard/notifications', label: 'Notifications', icon: 'bell' as const },
 ];
 
 export function ProShell({

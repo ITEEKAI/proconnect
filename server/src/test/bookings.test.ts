@@ -38,6 +38,21 @@ describe('bookings', () => {
     assert.equal(res.body.booking.estimatedTotalCents, 6800 * 5 + 4500);
     assert.equal(res.body.booking.status, 'requested');
     assert.match(res.body.booking.reference, /^PC-[A-Z2-9]{6}$/);
+    assert.equal(res.body.booking.withinHours, true);
+  });
+
+  it('flags a request that falls outside typical hours', async () => {
+    const res = await ctx.request('/api/bookings', {
+      token: clientToken,
+      json: {
+        professionalId: proId,
+        subject: 'Sunday emergency call-out',
+        scheduledFor: '2026-11-08T10:00',
+        estimatedHours: 2,
+      },
+    });
+    assert.equal(res.status, 201);
+    assert.equal(res.body.booking.withinHours, false);
   });
 
   it('keeps the original rate on an existing booking after the pro raises their price', async () => {
@@ -179,6 +194,10 @@ describe('bookings', () => {
     const adminToken = await ctx.login(ADMIN.email, ADMIN.password);
     const res = await ctx.request('/api/admin/bookings', { token: adminToken });
     assert.ok(res.body.bookings.length >= 8);
+
+    const thread = await ctx.request(`/api/bookings/${bookingId}`, { token: adminToken });
+    assert.equal(thread.status, 200);
+    assert.equal(thread.body.booking.id, bookingId);
   });
 
   it('counts completed work in the professional’s lifetime earnings', async () => {

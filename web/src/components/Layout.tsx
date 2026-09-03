@@ -7,29 +7,67 @@ import { NotificationBell } from './NotificationBell';
 
 export function Logo({ className, inverted = false }: { className?: string; inverted?: boolean }) {
   return (
-    <Link to="/" className={cx('inline-flex items-center gap-2.5', className)}>
-      <span className="bg-brand-600 flex size-8 items-center justify-center rounded-lg text-white">
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" aria-hidden>
-          <path d="M6 18V6h5a4 4 0 0 1 0 8H9" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="16.5" cy="16.5" r="2" fill="#7dd3fc" />
-        </svg>
-      </span>
-      <span className={cx('text-[17px] font-semibold tracking-tight', inverted ? 'text-white' : 'text-ink-950')}>
-        Pro<span className="text-brand-600">Connect</span>
+    <Link to="/" className={cx('inline-flex items-center gap-2.5', className)} aria-label="SimplyServices home">
+      <SimplyServicesMark className="size-9 shrink-0" inverted={inverted} />
+      <span
+        className={cx(
+          'text-[17px] font-semibold tracking-tight',
+          inverted ? 'text-white' : 'text-ink-950',
+        )}
+      >
+        SimplyServices
       </span>
     </Link>
   );
 }
 
+/** Dual-gear mark from the SimplyServices webapp. */
+export function SimplyServicesMark({ className, inverted = false }: { className?: string; inverted?: boolean }) {
+  const hole = inverted ? '#081028' : '#ffffff';
+  return (
+    <svg viewBox="0 0 40 40" className={className} aria-hidden>
+      <g fill="#10988a">
+        <Gear cx={24.5} cy={15.5} radius={11} teeth={8} />
+      </g>
+      <g fill="#0c7c72">
+        <Gear cx={15} cy={24.5} radius={9.2} teeth={8} />
+      </g>
+      <circle cx="24.5" cy="15.5" r="3.8" fill={hole} />
+      <circle cx="15" cy="24.5" r="3.1" fill={hole} />
+    </svg>
+  );
+}
+
+function Gear({ cx, cy, radius, teeth }: { cx: number; cy: number; radius: number; teeth: number }) {
+  const toothW = radius * 0.38;
+  const toothH = radius * 0.36;
+  return (
+    <>
+      {Array.from({ length: teeth }, (_, i) => (
+        <rect
+          key={i}
+          x={cx - toothW / 2}
+          y={cy - radius - toothH * 0.42}
+          width={toothW}
+          height={toothH}
+          rx={1.1}
+          transform={`rotate(${(360 / teeth) * i} ${cx} ${cy})`}
+        />
+      ))}
+      <circle cx={cx} cy={cy} r={radius * 0.92} />
+    </>
+  );
+}
+
 const PUBLIC_NAV = [
-  { to: '/browse', label: 'Find a professional' },
-  { to: '/categories', label: 'Categories' },
-  { to: '/for-professionals', label: 'For professionals' },
   { to: '/how-it-works', label: 'How it works' },
+  { to: '/categories', label: 'Services' },
+  { to: '/for-professionals', label: 'For professionals' },
+  { to: '/browse', label: 'Browse' },
 ];
 
 export function UserMenu() {
-  const { user, logout } = useAuth();
+  const { user, professional, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -37,10 +75,13 @@ export function UserMenu() {
     return (
       <div className="flex items-center gap-2">
         <LinkButton to="/login" variant="ghost" size="sm">
-          Sign in
+          Login
         </LinkButton>
-        <LinkButton to="/signup" size="sm">
-          Join free
+        <LinkButton to="/browse" size="sm" className="max-sm:hidden">
+          Find a professional
+        </LinkButton>
+        <LinkButton to="/join" variant="outline" size="sm" className="max-md:hidden">
+          Join as a professional
         </LinkButton>
       </div>
     );
@@ -53,7 +94,7 @@ export function UserMenu() {
         onClick={() => setOpen((v) => !v)}
         className="hover:bg-ink-100 flex items-center gap-2 rounded-full py-1 pr-2.5 pl-1 transition"
       >
-        <Avatar name={user.fullName} size="sm" />
+        <Avatar name={user.fullName} size="sm" src={professional?.avatarUrl} />
         <span className="text-ink-800 hidden text-sm font-medium sm:block">{user.fullName.split(' ')[0]}</span>
         <Icons.arrowRight className="text-ink-400 size-3.5 rotate-90" />
       </button>
@@ -76,13 +117,22 @@ export function UserMenu() {
               <Icons.layers className="size-4" /> My dashboard
             </Link>
             {user.role === 'client' && (
-              <Link
-                to="/account"
-                onClick={() => setOpen(false)}
-                className="text-ink-700 hover:bg-ink-50 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
-              >
-                <Icons.calendar className="size-4" /> My bookings
-              </Link>
+              <>
+                <Link
+                  to="/account"
+                  onClick={() => setOpen(false)}
+                  className="text-ink-700 hover:bg-ink-50 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
+                >
+                  <Icons.calendar className="size-4" /> My bookings
+                </Link>
+                <Link
+                  to="/account/invoices"
+                  onClick={() => setOpen(false)}
+                  className="text-ink-700 hover:bg-ink-50 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm"
+                >
+                  <Icons.card className="size-4" /> Invoices
+                </Link>
+              </>
             )}
             <button
               type="button"
@@ -153,6 +203,20 @@ export function PublicLayout() {
                 {item.label}
               </NavLink>
             ))}
+            <Link
+              to="/browse"
+              onClick={() => setMobileOpen(false)}
+              className="bg-brand-600 mt-2 rounded-lg px-3 py-2 text-center text-sm font-medium text-white sm:hidden"
+            >
+              Find a professional
+            </Link>
+            <Link
+              to="/join"
+              onClick={() => setMobileOpen(false)}
+              className="border-brand-600 text-brand-700 rounded-lg border px-3 py-2 text-center text-sm font-medium md:hidden"
+            >
+              Join as a professional
+            </Link>
           </nav>
         )}
       </header>
@@ -173,20 +237,31 @@ function Footer() {
         <div className="md:col-span-1">
           <Logo inverted />
           <p className="text-ink-400 mt-3 max-w-xs text-sm leading-relaxed">
-            Vetted professionals, transparent hourly rates, and one place to manage the work.
+            Connecting customers with trusted professionals. Published hourly rates, verified credentials,
+            and one place to manage the work.
           </p>
+          <p className="text-ink-500 mt-4 text-xs">The ProConnect marketplace, part of SimplyServices.</p>
         </div>
         <FooterColumn
-          title="For clients"
+          title="Company"
           links={[
-            { to: '/browse', label: 'Find a professional' },
-            { to: '/categories', label: 'Browse categories' },
             { to: '/how-it-works', label: 'How it works' },
+            { to: '/categories', label: 'Services' },
+            { to: '/for-professionals', label: 'For professionals' },
+            { to: '/browse', label: 'Find a professional' },
+          ]}
+        />
+        <FooterColumn
+          title="Support"
+          links={[
+            { to: '/how-it-works#faq', label: 'FAQ' },
+            { to: '/how-it-works', label: 'Help centre' },
+            { to: '/login', label: 'Login' },
             { to: '/signup', label: 'Create an account' },
           ]}
         />
         <FooterColumn
-          title="For professionals"
+          title="Professionals"
           links={[
             { to: '/for-professionals', label: 'Why join' },
             { to: '/for-professionals#plans', label: 'Membership plans' },
@@ -194,18 +269,19 @@ function Footer() {
             { to: '/login', label: 'Professional sign in' },
           ]}
         />
-        <FooterColumn
-          title="Company"
-          links={[
-            { to: '/how-it-works', label: 'Trust and safety' },
-            { to: '/how-it-works#faq', label: 'FAQ' },
-            { to: '/login', label: 'Admin sign in' },
-          ]}
-        />
+      </div>
+      <div className="container-page flex flex-wrap gap-3 pb-4">
+        <LinkButton to="/login" variant="ghost" className="border-ink-700 text-white hover:bg-white/10">
+          Login
+        </LinkButton>
+        <LinkButton to="/browse">Find a professional</LinkButton>
+        <LinkButton to="/join" variant="outline" className="border-brand-400 text-brand-200 hover:bg-white/5">
+          Apply as a professional
+        </LinkButton>
       </div>
       <div className="border-ink-800 container-page text-ink-500 flex flex-wrap items-center justify-between gap-3 border-t py-6 text-xs">
-        <p>© {new Date().getFullYear()} ProConnect. A demonstration marketplace.</p>
-        <p>Built with React, Express and SQLite.</p>
+        <p>© {new Date().getFullYear()} SimplyServices. All rights reserved.</p>
+        <p>ProConnect marketplace demo.</p>
       </div>
     </footer>
   );
