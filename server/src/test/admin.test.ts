@@ -24,7 +24,7 @@ describe('admin management', () => {
   it('onboards an expert, creating both the login and the profile', async () => {
     const categories = await ctx.request('/api/admin/categories', { token });
     const plans = await ctx.request('/api/admin/plans', { token });
-    const lawyers = categories.body.categories.find((c: { slug: string }) => c.slug === 'lawyers');
+    const lawyers = categories.body.categories.find((c: { slug: string }) => c.slug === 'water-storage-rainwater-plumbing');
     const professional = plans.body.plans.find((p: { slug: string }) => p.slug === 'professional');
 
     const res = await ctx.request('/api/admin/professionals', {
@@ -35,12 +35,12 @@ describe('admin management', () => {
         fullName: 'Ines Delgado',
         categoryId: lawyers.id,
         planId: professional.id,
-        headline: 'Immigration solicitor',
-        city: 'London',
-        country: 'United Kingdom',
+        headline: 'Rainwater systems adviser',
+        city: 'Wellington',
+        country: 'New Zealand',
         yearsExperience: 9,
         hourlyRate: 195,
-        specialties: ['Visas', 'Sponsor licences'],
+        specialties: ['Rainwater capture', 'Storage planning'],
         verificationStatus: 'verified',
         isPublished: true,
       },
@@ -57,7 +57,7 @@ describe('admin management', () => {
     const proToken = await ctx.login('new.expert@example.com', 'onboard-me-1');
     const dashboard = await ctx.request('/api/professional/dashboard', { token: proToken });
     assert.equal(dashboard.status, 200);
-    assert.equal(dashboard.body.professional.slug, 'ines-delgado-london');
+    assert.equal(dashboard.body.professional.slug, 'ines-delgado-wellington');
 
     // And they are immediately findable in the public directory.
     const search = await ctx.request('/api/directory/professionals?q=Ines%20Delgado');
@@ -184,7 +184,7 @@ describe('admin management', () => {
     assert.equal(res.body.slug, 'veterinary-surgeons');
 
     const publicList = await ctx.request('/api/directory/categories');
-    assert.ok(publicList.body.categories.some((c: { slug: string }) => c.slug === 'veterinary-surgeons'));
+    assert.ok(!publicList.body.categories.some((c: { slug: string }) => c.slug === 'veterinary-surgeons'));
   });
 
   it('deactivating a category removes it from the public list', async () => {
@@ -236,3 +236,4 @@ describe('admin management', () => {
     assert.ok(res.body.events.some((e: { action: string }) => e.action === 'professional.onboard'));
   });
 });
+

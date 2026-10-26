@@ -24,6 +24,25 @@ function migrate(db: DatabaseSync): void {
   if (!bookingCols.some((col) => col.name === 'payment_status')) {
     db.exec(`ALTER TABLE bookings ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'unpaid'`);
   }
+  const bookingAdditions: Array<[string, string]> = [
+    ['service_type', "TEXT NOT NULL DEFAULT 'onsite'"],
+    ['customer_reference', 'TEXT'],
+    ['assessment_reference', 'TEXT'],
+    ['requested_service', 'TEXT'],
+    ['professional_referral', 'TEXT'],
+    ['handoff_status', "TEXT NOT NULL DEFAULT 'not_started'"],
+    ['follow_up_status', "TEXT NOT NULL DEFAULT 'not_started'"],
+  ];
+  for (const [name, definition] of bookingAdditions) {
+    if (!bookingCols.some((col) => col.name === name)) {
+      db.exec(`ALTER TABLE bookings ADD COLUMN ${name} ${definition}`);
+    }
+  }
+
+  const professionalCols = db.prepare('PRAGMA table_info(professionals)').all() as Array<{ name: string }>;
+  if (!professionalCols.some((col) => col.name === 'is_demo')) {
+    db.exec(`ALTER TABLE professionals ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0`);
+  }
 
   const tables = db.prepare(`SELECT name FROM sqlite_master WHERE type = 'table'`).all() as Array<{ name: string }>;
   if (!tables.some((row) => row.name === 'payment_sessions')) {
@@ -37,7 +56,7 @@ function migrate(db: DatabaseSync): void {
         invoice_id      INTEGER REFERENCES subscription_invoices (id) ON DELETE SET NULL,
         payer_user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
         amount_cents    INTEGER NOT NULL CHECK (amount_cents >= 0),
-        currency        TEXT    NOT NULL DEFAULT 'GBP',
+        currency        TEXT    NOT NULL DEFAULT 'NZD',
         description     TEXT    NOT NULL DEFAULT '',
         success_path    TEXT    NOT NULL,
         cancel_path     TEXT    NOT NULL,
@@ -115,3 +134,4 @@ export function transaction<T>(fn: () => T): T {
     throw error;
   }
 }
+

@@ -11,13 +11,27 @@ import { directoryRouter } from './routes/directory.ts';
 import { notificationsRouter } from './routes/notifications.ts';
 import { paymentsRouter, stripeWebhookHandler } from './routes/payments.ts';
 import { professionalRouter } from './routes/professional.ts';
+import { marketplaceRouter } from './routes/marketplace.ts';
+import { integrationsRouter } from './routes/integrations.ts';
 import { attachWebApp } from './webapp.ts';
 import { config } from './config.ts';
 
 export function createApp(): Express {
   const app = express();
   app.disable('x-powered-by');
-  app.use(cors({ origin: true, credentials: true }));
+  app.use(
+    cors({
+      origin: config.isProduction && config.publicUrl ? config.publicUrl : true,
+      credentials: true,
+    }),
+  );
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    next();
+  });
 
   app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
@@ -34,6 +48,8 @@ export function createApp(): Express {
     });
   });
 
+  app.use('/api/marketplace', marketplaceRouter);
+  app.use('/api/integrations', integrationsRouter);
   app.use('/api/auth', authRouter);
   app.use('/api/directory', directoryRouter);
   app.use('/api/professional', professionalRouter);
@@ -47,3 +63,4 @@ export function createApp(): Express {
   app.use(errorHandler);
   return app;
 }
+

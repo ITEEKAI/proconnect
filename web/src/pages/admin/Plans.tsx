@@ -232,7 +232,7 @@ function PlanModal({
             min={0}
             step="1"
             required
-            prefix="£"
+            prefix="$"
             value={monthlyFee}
             onChange={(e) => setMonthlyFee(e.target.value)}
             error={error?.fieldError('monthlyFee')}
@@ -282,3 +282,4 @@ function PlanModal({
     </Modal>
   );
 }
+

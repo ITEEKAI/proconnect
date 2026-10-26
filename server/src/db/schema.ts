@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS plans (
   name              TEXT    NOT NULL,
   description       TEXT    NOT NULL DEFAULT '',
   monthly_fee_cents INTEGER NOT NULL CHECK (monthly_fee_cents >= 0),
-  currency          TEXT    NOT NULL DEFAULT 'GBP',
+  currency          TEXT    NOT NULL DEFAULT 'NZD',
   commission_bps    INTEGER NOT NULL DEFAULT 0 CHECK (commission_bps BETWEEN 0 AND 10000),
   max_listings      INTEGER NOT NULL DEFAULT 1,
   features          TEXT    NOT NULL DEFAULT '[]',
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS professionals (
 
   -- Professional-controlled pricing
   hourly_rate_cents    INTEGER NOT NULL DEFAULT 0 CHECK (hourly_rate_cents >= 0),
-  currency             TEXT    NOT NULL DEFAULT 'GBP',
+  currency             TEXT    NOT NULL DEFAULT 'NZD',
   minimum_hours        REAL    NOT NULL DEFAULT 1 CHECK (minimum_hours > 0),
   callout_fee_cents    INTEGER NOT NULL DEFAULT 0 CHECK (callout_fee_cents >= 0),
   free_consultation    INTEGER NOT NULL DEFAULT 0 CHECK (free_consultation IN (0, 1)),
@@ -101,6 +101,7 @@ CREATE TABLE IF NOT EXISTS professionals (
                        CHECK (verification_status IN ('pending', 'verified', 'rejected')),
   is_published         INTEGER NOT NULL DEFAULT 0 CHECK (is_published IN (0, 1)),
   response_time_hours  INTEGER NOT NULL DEFAULT 24,
+  is_demo              INTEGER NOT NULL DEFAULT 0 CHECK (is_demo IN (0, 1)),
   rating_avg           REAL    NOT NULL DEFAULT 0,
   rating_count         INTEGER NOT NULL DEFAULT 0,
   created_at           TEXT    NOT NULL DEFAULT (datetime('now')),
@@ -128,11 +129,19 @@ CREATE TABLE IF NOT EXISTS bookings (
   estimated_hours     REAL    NOT NULL CHECK (estimated_hours > 0),
   hourly_rate_cents   INTEGER NOT NULL CHECK (hourly_rate_cents >= 0),
   callout_fee_cents   INTEGER NOT NULL DEFAULT 0 CHECK (callout_fee_cents >= 0),
-  currency            TEXT    NOT NULL DEFAULT 'GBP',
+  currency            TEXT    NOT NULL DEFAULT 'NZD',
   logged_hours        REAL,
   total_cents         INTEGER,
   commission_cents    INTEGER,
   professional_note   TEXT,
+  service_type        TEXT    NOT NULL DEFAULT 'onsite'
+                      CHECK (service_type IN ('consultation', 'onsite')),
+  customer_reference  TEXT,
+  assessment_reference TEXT,
+  requested_service   TEXT,
+  professional_referral TEXT,
+  handoff_status      TEXT    NOT NULL DEFAULT 'not_started',
+  follow_up_status    TEXT    NOT NULL DEFAULT 'not_started',
   payment_status      TEXT    NOT NULL DEFAULT 'unpaid'
                       CHECK (payment_status IN ('unpaid', 'paid', 'waived')),
   created_at          TEXT    NOT NULL DEFAULT (datetime('now')),
@@ -187,7 +196,7 @@ CREATE TABLE IF NOT EXISTS subscription_invoices (
   period_start    TEXT    NOT NULL,
   period_end      TEXT    NOT NULL,
   amount_cents    INTEGER NOT NULL CHECK (amount_cents >= 0),
-  currency        TEXT    NOT NULL DEFAULT 'GBP',
+  currency        TEXT    NOT NULL DEFAULT 'NZD',
   status          TEXT    NOT NULL DEFAULT 'due' CHECK (status IN ('paid', 'due', 'void')),
   created_at      TEXT    NOT NULL DEFAULT (datetime('now'))
 );
@@ -207,7 +216,7 @@ CREATE TABLE IF NOT EXISTS payment_sessions (
   invoice_id      INTEGER REFERENCES subscription_invoices (id) ON DELETE SET NULL,
   payer_user_id   INTEGER NOT NULL REFERENCES users (id) ON DELETE CASCADE,
   amount_cents    INTEGER NOT NULL CHECK (amount_cents >= 0),
-  currency        TEXT    NOT NULL DEFAULT 'GBP',
+  currency        TEXT    NOT NULL DEFAULT 'NZD',
   description     TEXT    NOT NULL DEFAULT '',
   success_path    TEXT    NOT NULL,
   cancel_path     TEXT    NOT NULL,
@@ -291,3 +300,4 @@ CREATE TABLE IF NOT EXISTS availability_slots (
   UNIQUE (professional_id, weekday)
 );
 `;
+

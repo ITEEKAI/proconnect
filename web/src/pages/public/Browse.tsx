@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api, query } from '../../lib/api';
-import { pluralise } from '../../lib/format';
+import { money, pluralise } from '../../lib/format';
+import { useMarketplace } from '../../lib/marketplace';
 import { useAsync, useDebounced } from '../../lib/useAsync';
 import type { Category, Professional } from '../../lib/types';
 import { Icons } from '../../components/icons';
@@ -26,6 +27,7 @@ const SORT_OPTIONS = [
 ];
 
 export function Browse() {
+  const marketplace = useMarketplace();
   const [params, setParams] = useSearchParams();
 
   const [term, setTerm] = useState(params.get('q') ?? '');
@@ -193,7 +195,7 @@ export function Browse() {
                     className="accent-brand-600 flex-1"
                   />
                   <span className="text-ink-700 w-16 text-right text-sm font-medium tabular-nums">
-                    {maxRate ? `£${maxRate}` : 'Any'}
+                    {maxRate ? money(Number(maxRate) * 100, marketplace.locale.currency) : 'Any'}
                   </span>
                 </div>
               </div>
@@ -358,3 +360,4 @@ function FilterRow({
     </button>
   );
 }
+

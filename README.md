@@ -1,6 +1,10 @@
-# ProConnect
+# ProConnect — 056 Universal Marketplace prototype
 
-The SimplyServices professional marketplace. It connects people who need
+The active feature branch contains the OffGrid056 specialist-marketplace prototype. It uses a reusable, single-business configuration in `server/src/business/marketplace.ts`; see `docs/BUSINESS_EDITION_CLONING.md` and `docs/PHASE1_MVP_REPORT.md`.
+
+This prototype is not authorised for public deployment or live payments. Seeded identities and transactions are test data.
+
+The shared 056 professional marketplace engine. It connects people who need
 help with vetted lawyers, tradespeople, accountants, real estate agents,
 coaches and more — branded to the SimplyServices webapp, with hourly-rate
 booking rather than a three-quote lead auction.
@@ -232,3 +236,4 @@ NODE_ENV=production HOST=0.0.0.0 PUBLIC_URL=https://app.example.com AUTH_SECRET=
 ## Not included
 
 Card payouts to professionals (Stripe Connect), email delivery, and a live card processor until you add Stripe keys. Avatar photos are stored on the local disk under `/uploads`.
+

@@ -28,7 +28,7 @@ const ROLE_LABEL: Record<RateChange['changed_by_role'], string> = {
  */
 export function RateHistoryList({
   entries,
-  currency = 'GBP',
+  currency = 'NZD',
   emptyLabel = 'Nothing recorded yet.',
   actorPerspective = 'self',
 }: {
@@ -85,3 +85,4 @@ export function RateHistoryList({
     </ul>
   );
 }
+

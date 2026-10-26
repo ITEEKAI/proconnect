@@ -7,8 +7,10 @@ import { useAsync } from '../../lib/useAsync';
 import type { Category, Plan } from '../../lib/types';
 import { Icons } from '../../components/icons';
 import { Alert, Button, Card, Select, TagInput, TextArea, TextInput, cx } from '../../components/ui';
+import { useMarketplace } from '../../lib/marketplace';
 
 export function Join() {
+  const marketplace = useMarketplace();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -28,7 +30,7 @@ export function Join() {
     bio: '',
     city: '',
     region: '',
-    country: 'United Kingdom',
+    country: marketplace.locale.countryName,
     yearsExperience: '5',
     hourlyRate: '',
   });
@@ -119,7 +121,7 @@ export function Join() {
         <div className="min-w-0">
           <header className="mb-8">
             <h1 className="text-ink-950 text-3xl font-semibold tracking-tight">
-              Apply to join SimplyServices
+              Apply to join {marketplace.identity.businessName}
             </h1>
             <p className="text-ink-500 mt-2">
               Tell us what you do and what you charge. We verify every applicant before they appear in the
@@ -249,7 +251,7 @@ export function Join() {
                   min={0}
                   step="1"
                   required
-                  prefix="£"
+                  prefix={marketplace.locale.currencySymbol}
                   value={form.hourlyRate}
                   onChange={(e) => set('hourlyRate', e.target.value)}
                   error={error?.fieldError('hourlyRate')}
@@ -308,7 +310,7 @@ export function Join() {
             <ol className="mt-4 space-y-4">
               {[
                 ['We check your credentials', 'Usually the same working week.'],
-                ['Your profile goes live', 'With a verified badge and your published hourly rate.'],
+                ['Your profile goes live', 'After credential review, with your published hourly rate.'],
                 ['Enquiries start arriving', 'Each one includes the job, date and expected hours.'],
               ].map(([title, body], index) => (
                 <li key={title} className="flex gap-3">
@@ -339,3 +341,4 @@ export function Join() {
     </div>
   );
 }
+

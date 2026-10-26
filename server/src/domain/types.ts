@@ -41,6 +41,7 @@ export interface ProfessionalRow {
   verification_status: VerificationStatus;
   is_published: number;
   response_time_hours: number;
+  is_demo: number;
   rating_avg: number;
   rating_count: number;
   created_at: string;
@@ -84,6 +85,7 @@ export interface ProfessionalDto {
   verificationStatus: VerificationStatus;
   isPublished: boolean;
   responseTimeHours: number;
+  isDemo: boolean;
   rating: { average: number; count: number };
   createdAt: string;
 }
@@ -104,3 +106,4 @@ export interface ProfessionalPrivateDto extends ProfessionalDto {
     nextInvoiceDate: string | null;
   };
 }
+

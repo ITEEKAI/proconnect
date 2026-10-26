@@ -7,8 +7,10 @@ import type { Category, Professional } from '../../lib/types';
 import { CategoryIcon, Icons } from '../../components/icons';
 import { ProfessionalCard } from '../../components/ProfessionalCard';
 import { Button, LinkButton, Skeleton } from '../../components/ui';
+import { useMarketplace } from '../../lib/marketplace';
 
 export function Home() {
+  const marketplace = useMarketplace();
   const navigate = useNavigate();
   const [term, setTerm] = useState('');
   const [where, setWhere] = useState('');
@@ -37,19 +39,19 @@ export function Home() {
         <div className="container-page grid items-center gap-12 py-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,22rem)] lg:py-20">
           <div>
             <h1 className="text-ink-950 text-4xl leading-[1.12] font-semibold tracking-tight sm:text-5xl">
-              Find trusted professionals.
+              Build practical resilience.
               <br />
-              Book by the hour.{' '}
-              <span className="text-brand-600">We manage the rest.</span>
+              Find the right specialist.{' '}
+              <span className="text-brand-600">Track the work in one place.</span>
             </h1>
             <p className="text-ink-600 mt-5 max-w-xl text-lg leading-relaxed">
-              One request connects you to verified local pros with published rates and a booking you can
-              track from start to finish.
+              {marketplace.identity.tagline} Browse reviewed specialists, compare published NZD rates,
+              and start a consultation or on-site service request.
             </p>
             <ul className="mt-6 grid gap-3 sm:grid-cols-2">
               {(
                 [
-                  { label: 'Verified Pros', icon: 'shieldCheck' },
+                  { label: 'Credential review', icon: 'shieldCheck' },
                   { label: 'Upfront Pricing', icon: 'tag' },
                   { label: 'One Point of Contact', icon: 'message' },
                   { label: 'Quality Checks', icon: 'checkCircle' },
@@ -77,7 +79,7 @@ export function Home() {
               <input
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
-                placeholder="e.g. electrician, solicitor, accountant"
+                placeholder="e.g. rainwater, solar, preparedness"
                 className="field pl-10"
               />
             </div>
@@ -96,7 +98,7 @@ export function Home() {
             </Button>
             <p className="text-ink-500 mt-3 text-center text-xs">
               Popular:{' '}
-              {['EV charger', 'Self assessment', 'Boiler'].map((item, i) => (
+              {['Rainwater', 'Battery backup', 'Resilience plan'].map((item, i) => (
                 <span key={item}>
                   {i > 0 && ' · '}
                   <Link to={`/browse?q=${encodeURIComponent(item)}`} className="text-brand-700 hover:underline">
@@ -157,7 +159,7 @@ export function Home() {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-ink-950 text-2xl font-semibold tracking-tight sm:text-3xl">Services</h2>
-            <p className="text-ink-500 mt-2">Ten professions, each with published rates and verified credentials.</p>
+            <p className="text-ink-500 mt-2">Seven resilience fields with published rates and credential review.</p>
           </div>
           <LinkButton to="/categories" variant="outline">
             All services <Icons.arrowRight className="size-4" />
@@ -243,16 +245,16 @@ export function Home() {
 
       <section className="container-page py-16 lg:py-20">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-ink-950 text-3xl font-semibold tracking-tight">Why choose SimplyServices</h2>
+          <h2 className="text-ink-950 text-3xl font-semibold tracking-tight">Why choose {marketplace.identity.businessName}</h2>
           <p className="text-ink-500 mt-3">Everything you need for a seamless service experience.</p>
         </div>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: 'shieldCheck' as const, title: 'Verified professionals', body: 'Identity and credentials checked before anyone is listed.' },
+            { icon: 'shieldCheck' as const, title: 'Reviewed professionals', body: 'Identity and relevant credentials are checked before live providers are listed.' },
             { icon: 'tag' as const, title: 'Transparent pricing', body: 'Published hourly rates. No hidden fees after you book.' },
             { icon: 'checkCircle' as const, title: 'Quality guarantees', body: 'Reviews are tied to completed bookings, not anonymous praise.' },
             { icon: 'bolt' as const, title: 'Fast matching', body: 'Search, filter and request in minutes — not days of phone tag.' },
-            { icon: 'card' as const, title: 'Secure payments', body: 'Pay the job invoice by card once the hours are logged.' },
+            { icon: 'card' as const, title: 'Clear invoicing', body: 'Prototype invoices preserve the quoted NZD rate; payments remain test-only.' },
             { icon: 'message' as const, title: '24/7 in-app inbox', body: 'Messages and alerts sit on the booking, not across apps.' },
             { icon: 'pin' as const, title: 'Local experts', body: 'Filter by town, region and the areas they actually cover.' },
             { icon: 'clock' as const, title: 'Time savings', body: 'One marketplace instead of a dozen websites and call-backs.' },
@@ -307,7 +309,7 @@ export function Home() {
               Get consistent work without wasting money on ads.
             </h2>
             <p className="text-ink-300 mt-3">
-              Join SimplyServices. Set your rate, win jobs, and focus on the work.
+              Join {marketplace.identity.businessName}. Set your rate, respond to requests, and focus on the work.
             </p>
           </div>
           <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -345,7 +347,7 @@ export function Home() {
             <Icons.search className="size-8" />
             <h3 className="mt-4 text-2xl font-semibold">Find a professional</h3>
             <p className="mt-2 text-sm text-white/85">
-              Compare verified local pros with published hourly rates and send a request today.
+              Compare reviewed specialists with published hourly rates and send a prototype request.
             </p>
             <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold">
               Start now <Icons.arrowRight className="size-4" />
@@ -358,7 +360,7 @@ export function Home() {
             <Icons.briefcase className="text-brand-600 size-8" />
             <h3 className="text-ink-950 mt-4 text-2xl font-semibold">Apply as a professional</h3>
             <p className="text-ink-600 mt-2 text-sm">
-              Set your rate, get verified, and take bookings from people who already accepted your price.
+              Set your rate, complete credential review, and manage requests from one dashboard.
             </p>
             <span className="text-brand-700 mt-5 inline-flex items-center gap-1 text-sm font-semibold">
               Join now <Icons.arrowRight className="size-4" />
@@ -378,3 +380,4 @@ function HeroStat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+

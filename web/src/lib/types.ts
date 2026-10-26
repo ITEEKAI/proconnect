@@ -43,6 +43,7 @@ export interface Professional {
   verificationStatus: VerificationStatus;
   isPublished: boolean;
   responseTimeHours: number;
+  isDemo: boolean;
   rating: { average: number; count: number };
   createdAt: string;
 }
@@ -126,6 +127,17 @@ export interface Booking {
   totalCents: number | null;
   paymentStatus: PaymentStatus;
   professionalNote: string | null;
+  serviceType: 'consultation' | 'onsite';
+  integration: {
+    customerReference: string | null;
+    assessmentReference: string | null;
+    requestedService: string | null;
+    professionalReferral: string | null;
+    bookingStatus: string;
+    projectHandoff: string;
+    completionFollowUp: string;
+    mode: string;
+  };
   withinHours: boolean;
   createdAt: string;
   client: { id: number; name: string };
@@ -205,3 +217,4 @@ export interface AdminOverview {
   byPlan: Array<{ name: string; professionals: number; monthlyRevenueCents: number }>;
   recentActivity: AuditEvent[];
 }
+

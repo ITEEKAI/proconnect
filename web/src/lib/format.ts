@@ -1,13 +1,11 @@
-const CURRENCY_SYMBOLS: Record<string, string> = { USD: '$', GBP: '£', EUR: '€' };
+const CURRENCY_LOCALES: Record<string, string> = { NZD: 'en-NZ', AUD: 'en-AU', USD: 'en-US', GBP: 'en-GB', EUR: 'en-IE' };
 
-export function money(cents: number | null | undefined, currency = 'GBP'): string {
+export function money(cents: number | null | undefined, currency = 'NZD'): string {
   if (cents === null || cents === undefined) return '—';
-  const symbol = CURRENCY_SYMBOLS[currency] ?? '';
-  const value = cents / 100;
-  const formatted = Number.isInteger(value)
-    ? value.toLocaleString('en-GB')
-    : value.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return `${symbol}${formatted}`;
+  return new Intl.NumberFormat(CURRENCY_LOCALES[currency] ?? 'en-NZ', {
+    style: 'currency', currency, minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
 }
 
 export function dollars(cents: number | null | undefined): number {
@@ -22,14 +20,14 @@ export function formatDate(value: string | null | undefined): string {
   if (!value) return '—';
   const date = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return date.toLocaleDateString('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return '—';
   const date = new Date(value.includes('T') ? value : value.replace(' ', 'T'));
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString('en-GB', {
+  return date.toLocaleString('en-NZ', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -78,7 +76,7 @@ export function avatarColour(seed: string): string {
 }
 
 export function pluralise(count: number, singular: string, plural = `${singular}s`): string {
-  return `${count.toLocaleString('en-GB')} ${count === 1 ? singular : plural}`;
+  return `${count.toLocaleString('en-NZ')} ${count === 1 ? singular : plural}`;
 }
 
 export function hoursLabel(value: number | string | null | undefined): string {
@@ -110,3 +108,4 @@ export function scheduledTimeFitsHours(
   const end = (endParts[0] ?? 0) * 60 + (endParts[1] ?? 0);
   return minute >= start && minute < end;
 }
+

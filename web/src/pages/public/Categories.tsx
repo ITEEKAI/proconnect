@@ -5,15 +5,17 @@ import { useAsync } from '../../lib/useAsync';
 import type { Category } from '../../lib/types';
 import { CategoryIcon, Icons } from '../../components/icons';
 import { Skeleton } from '../../components/ui';
+import { useMarketplace } from '../../lib/marketplace';
 
 export function Categories() {
+  const marketplace = useMarketplace();
   const categories = useAsync(() => api<{ categories: Category[] }>('/directory/categories'));
 
   return (
     <div className="container-page py-14">
       <header className="max-w-2xl">
         <h1 className="text-ink-950 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Every field of expertise
+          {marketplace.identity.businessName} specialist categories
         </h1>
         <p className="text-ink-500 mt-3 text-lg">
           Pick a profession to see who is available, what they charge per hour, and how clients rated them.
@@ -43,7 +45,7 @@ export function Categories() {
             <div className="border-ink-100 mt-5 flex items-center justify-between border-t pt-4 text-sm">
               <span className="text-ink-500">{pluralise(category.professionalCount, 'professional')}</span>
               {category.fromRateCents !== null ? (
-                <span className="text-ink-900 font-medium">from {money(category.fromRateCents)}/hr</span>
+                <span className="text-ink-900 font-medium">from {money(category.fromRateCents, marketplace.locale.currency)}/hr</span>
               ) : (
                 <span className="text-ink-400">Coming soon</span>
               )}
@@ -54,3 +56,4 @@ export function Categories() {
     </div>
   );
 }
+

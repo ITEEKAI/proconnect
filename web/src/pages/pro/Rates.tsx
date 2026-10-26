@@ -109,7 +109,7 @@ export function ProRates() {
                   min={0}
                   step="1"
                   required
-                  prefix="£"
+                  prefix="$"
                   hint="What clients see on your profile and in search."
                   value={hourlyRate}
                   onChange={(e) => setHourlyRate(e.target.value)}
@@ -120,7 +120,7 @@ export function ProRates() {
                   type="number"
                   min={0}
                   step="1"
-                  prefix="£"
+                  prefix="$"
                   hint="Added once per job. Leave at 0 if you don’t charge one."
                   value={calloutFee}
                   onChange={(e) => setCalloutFee(e.target.value)}
@@ -249,3 +249,4 @@ export function ProRates() {
     </ProShell>
   );
 }
+

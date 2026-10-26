@@ -10,8 +10,12 @@ import { addMonths, uniqueSlug } from '../lib/format.ts';
 import { asyncHandler, parseBody, parseQuery } from '../lib/http.ts';
 import { PROFESSIONAL_SELECT, recordRateChange, toPublicDto } from '../domain/professionals.ts';
 import type { ProfessionalRow } from '../domain/types.ts';
+import { marketplace, marketplaceCategorySlugs } from '../business/marketplace.ts';
 
 export const directoryRouter = Router();
+const categoryPlaceholders = marketplaceCategorySlugs.map(() => '?').join(', ');
+const planSlugs = marketplace.membershipPlans.map((plan) => plan.slug);
+const planPlaceholders = planSlugs.map(() => '?').join(', ');
 
 const SORTS = {
   recommended: 'p.rating_avg DESC, p.rating_count DESC, p.id ASC',
@@ -54,9 +58,10 @@ directoryRouter.get(
        FROM categories c
        LEFT JOIN professionals p
          ON p.category_id = c.id AND p.is_published = 1 AND p.verification_status = 'verified'
-       WHERE c.is_active = 1
+       WHERE c.is_active = 1 AND c.slug IN (${categoryPlaceholders})
        GROUP BY c.id
        ORDER BY c.sort_order, c.name`,
+      ...marketplaceCategorySlugs,
     );
     res.json({
       categories: rows.map((r) => ({
@@ -77,8 +82,8 @@ directoryRouter.get(
   asyncHandler((req, res) => {
     const q = parseQuery(searchSchema, req.query);
 
-    const where: string[] = ["p.is_published = 1", "u.status = 'active'"];
-    const params: unknown[] = [];
+    const where: string[] = ["p.is_published = 1", "u.status = 'active'", `c.slug IN (${categoryPlaceholders})`];
+    const params: unknown[] = [...marketplaceCategorySlugs];
 
     if (q.verifiedOnly !== 'false') {
       where.push("p.verification_status = 'verified'");
@@ -187,10 +192,17 @@ directoryRouter.get(
   asyncHandler((_req, res) => {
     const stats = get<{ professionals: number; categories: number; bookings: number; avg_rating: number | null }>(
       `SELECT
-         (SELECT COUNT(*) FROM professionals WHERE is_published = 1 AND verification_status = 'verified') AS professionals,
-         (SELECT COUNT(*) FROM categories WHERE is_active = 1) AS categories,
-         (SELECT COUNT(*) FROM bookings) AS bookings,
-         (SELECT AVG(rating) FROM reviews) AS avg_rating`,
+         (SELECT COUNT(*) FROM professionals p JOIN categories c ON c.id = p.category_id
+           WHERE p.is_published = 1 AND p.verification_status = 'verified' AND c.slug IN (${categoryPlaceholders})) AS professionals,
+         (SELECT COUNT(*) FROM categories WHERE is_active = 1 AND slug IN (${categoryPlaceholders})) AS categories,
+         (SELECT COUNT(*) FROM bookings b JOIN professionals p ON p.id = b.professional_id
+           JOIN categories c ON c.id = p.category_id WHERE c.slug IN (${categoryPlaceholders})) AS bookings,
+         (SELECT AVG(r.rating) FROM reviews r JOIN professionals p ON p.id = r.professional_id
+           JOIN categories c ON c.id = p.category_id WHERE c.slug IN (${categoryPlaceholders})) AS avg_rating`,
+      ...marketplaceCategorySlugs,
+      ...marketplaceCategorySlugs,
+      ...marketplaceCategorySlugs,
+      ...marketplaceCategorySlugs,
     );
     res.json({
       professionals: stats?.professionals ?? 0,
@@ -236,6 +248,10 @@ directoryRouter.post(
       body.categoryId,
     );
     if (!category) throw ApiError.badRequest('That field of expertise is not available.');
+    const categorySlug = get<{ slug: string }>('SELECT slug FROM categories WHERE id = ?', category.id);
+    if (!categorySlug || !marketplaceCategorySlugs.includes(categorySlug.slug as (typeof marketplaceCategorySlugs)[number])) {
+      throw ApiError.badRequest('That field of expertise is not available in this marketplace edition.');
+    }
     const plan = get<{ id: number; name: string; monthly_fee_cents: number }>(
       'SELECT id, name, monthly_fee_cents FROM plans WHERE id = ? AND is_active = 1',
       body.planId,
@@ -259,8 +275,8 @@ directoryRouter.post(
         `INSERT INTO professionals
            (user_id, category_id, plan_id, slug, display_name, headline, bio, business_name,
             city, region, country, years_experience, hourly_rate_cents, monthly_fee_cents,
-            subscription_status, next_invoice_date, specialties, verification_status, is_published)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'trialing', ?, ?, 'pending', 0)`,
+            subscription_status, next_invoice_date, specialties, verification_status, is_published, currency)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'trialing', ?, ?, 'pending', 0, ?)`,
         userId,
         category.id,
         plan.id,
@@ -277,6 +293,7 @@ directoryRouter.post(
         plan.monthly_fee_cents,
         addMonths(new Date(), 1),
         JSON.stringify(body.specialties),
+        marketplace.locale.currency,
       );
 
       recordRateChange({
@@ -335,7 +352,7 @@ directoryRouter.get(
       currency: string;
       commission_bps: number;
       features: string;
-    }>('SELECT * FROM plans WHERE is_active = 1 ORDER BY sort_order, monthly_fee_cents');
+    }>(`SELECT * FROM plans WHERE is_active = 1 AND slug IN (${planPlaceholders}) ORDER BY sort_order, monthly_fee_cents`, ...planSlugs);
     res.json({
       plans: rows.map((r) => ({
         id: r.id,
@@ -350,3 +367,4 @@ directoryRouter.get(
     });
   }),
 );
+

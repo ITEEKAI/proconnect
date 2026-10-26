@@ -591,7 +591,7 @@ function FeeModal({
             type="number"
             min={0}
             step="1"
-            prefix="£"
+            prefix="$"
             hint="This professional will be skipped when the plan price changes."
             value={fee}
             onChange={(e) => setFee(e.target.value)}
@@ -706,10 +706,11 @@ function RateOverrideModal({
         type="number"
         min={0}
         step="1"
-        prefix="£"
+        prefix="$"
         value={rate}
         onChange={(e) => setRate(e.target.value)}
       />
     </Modal>
   );
 }
+

@@ -21,8 +21,8 @@ export function ProfessionalCard({ pro }: { pro: Professional }) {
               <p className="text-ink-500 truncate text-sm">{pro.businessName ?? pro.category.name}</p>
             </div>
             {pro.verificationStatus === 'verified' && (
-              <Badge tone="success" className="shrink-0">
-                <Icons.shieldCheck className="size-3" /> Verified
+              <Badge tone={pro.isDemo ? 'warning' : 'success'} className="shrink-0">
+                <Icons.shieldCheck className="size-3" /> {pro.isDemo ? 'Demo profile' : 'Credential reviewed'}
               </Badge>
             )}
           </div>
@@ -76,3 +76,4 @@ export function ProfessionalCard({ pro }: { pro: Professional }) {
     </Link>
   );
 }
+

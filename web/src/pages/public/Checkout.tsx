@@ -49,7 +49,7 @@ export function CheckoutPage() {
   return (
     <div className="container-page max-w-lg py-14">
       <p className="text-brand-700 text-xs font-semibold tracking-wide uppercase">Secure checkout</p>
-      <h1 className="text-ink-950 mt-2 text-3xl font-semibold tracking-tight">Pay SimplyServices</h1>
+      <h1 className="text-ink-950 mt-2 text-3xl font-semibold tracking-tight">Test checkout</h1>
       <p className="text-ink-500 mt-2 text-sm">
         Test checkout — no real card is charged until Stripe keys are set on the server.
       </p>
@@ -123,3 +123,4 @@ export function CheckoutPage() {
     </div>
   );
 }
+

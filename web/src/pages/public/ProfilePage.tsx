@@ -15,11 +15,13 @@ import {
   Card,
   EmptyState,
   Modal,
+  Select,
   Stars,
   TextArea,
   TextInput,
   cx,
 } from '../../components/ui';
+import { useMarketplace } from '../../lib/marketplace';
 
 interface ProfileResponse {
   professional: Professional;
@@ -73,8 +75,8 @@ export function ProfilePage() {
               <div className="flex flex-wrap items-center gap-2.5">
                 <h1 className="text-ink-950 text-3xl font-semibold tracking-tight">{pro.displayName}</h1>
                 {pro.verificationStatus === 'verified' && (
-                  <Badge tone="success">
-                    <Icons.shieldCheck className="size-3" /> Verified
+                  <Badge tone={pro.isDemo ? 'warning' : 'success'}>
+                    <Icons.shieldCheck className="size-3" /> {pro.isDemo ? 'Demo profile' : 'Credential reviewed'}
                   </Badge>
                 )}
                 {pro.pricing.freeConsultation && <Badge tone="brand">Free first consultation</Badge>}
@@ -101,6 +103,11 @@ export function ProfilePage() {
 
       <div className="container-page grid gap-10 py-10 lg:grid-cols-[1fr_22rem]">
         <div className="min-w-0 space-y-8">
+          {pro.isDemo && (
+            <Alert tone="warning" title="Prototype demonstration profile">
+              This profile is test data, not a verified real-world provider. Requests exercise the prototype workflow only.
+            </Alert>
+          )}
           <Section title="About">
             <p className="text-ink-700 leading-relaxed whitespace-pre-line">{pro.bio || 'No bio yet.'}</p>
           </Section>
@@ -296,6 +303,7 @@ function BookingModal({
   availability: AvailabilitySlot[];
   onBooked: () => void;
 }) {
+  const marketplace = useMarketplace();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -303,6 +311,9 @@ function BookingModal({
   const [details, setDetails] = useState('');
   const [scheduledFor, setScheduledFor] = useState(defaultSchedule());
   const [hours, setHours] = useState(String(Math.max(1, professional.pricing.minimumHours)));
+  const [serviceType, setServiceType] = useState<'consultation' | 'onsite'>('onsite');
+  const [customerReference, setCustomerReference] = useState('');
+  const [assessmentReference, setAssessmentReference] = useState('');
   const [error, setError] = useState<ApiError | null>(null);
   const [saving, setSaving] = useState(false);
   const [created, setCreated] = useState<Booking | null>(null);
@@ -324,6 +335,10 @@ function BookingModal({
           details,
           scheduledFor,
           estimatedHours: Number(hours),
+          serviceType,
+          customerReference: customerReference || undefined,
+          assessmentReference: assessmentReference || undefined,
+          requestedService: subject,
         },
       });
       setCreated(result.booking);
@@ -430,6 +445,21 @@ function BookingModal({
       <form id="booking-form" onSubmit={submit} className="space-y-4">
         {error && <Alert tone="danger">{error.message}</Alert>}
 
+        <Select label="Service pathway" value={serviceType} onChange={(e) => setServiceType(e.target.value as 'consultation' | 'onsite')}>
+          <option value="onsite">On-site service request</option>
+          <option value="consultation">Online consultation</option>
+        </Select>
+
+        {serviceType === 'consultation' ? (
+          <Alert tone="warning" title="Consultation integration is not live">
+            TidyCal and Zoom are planned but not yet verified. This creates an internal request only; no external meeting or payment is created.
+          </Alert>
+        ) : (
+          <Alert tone="info" title="On-site coordination">
+            {marketplace.booking.onsite.coordinator} may coordinate qualified trades after the specialist accepts the request.
+          </Alert>
+        )}
+
         <TextInput
           label="What do you need?"
           required
@@ -445,6 +475,21 @@ function BookingModal({
           onChange={(e) => setDetails(e.target.value)}
           placeholder="Property type, what you have already tried, deadlines, access notes…"
         />
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextInput
+            label="Customer reference"
+            hint="Optional reference only — do not paste private records."
+            value={customerReference}
+            onChange={(e) => setCustomerReference(e.target.value)}
+          />
+          <TextInput
+            label="Assessment reference"
+            hint="Optional OffGrid056 assessment ID."
+            value={assessmentReference}
+            onChange={(e) => setAssessmentReference(e.target.value)}
+          />
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <TextInput
@@ -515,3 +560,4 @@ function BookingModal({
     </Modal>
   );
 }
+

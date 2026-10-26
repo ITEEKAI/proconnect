@@ -4,6 +4,7 @@ import { AuthProvider, homeFor, useAuth } from './lib/auth';
 import type { Role } from './lib/types';
 import { PageLoader, PublicLayout } from './components/Layout';
 import { LinkButton } from './components/ui';
+import { MarketplaceProvider } from './lib/marketplace';
 
 import { Home } from './pages/public/Home';
 import { Browse } from './pages/public/Browse';
@@ -67,6 +68,7 @@ function NotFound() {
 
 export function App() {
   return (
+    <MarketplaceProvider>
     <AuthProvider>
       <Routes>
         <Route element={<PublicLayout />}>
@@ -278,5 +280,7 @@ export function App() {
         />
       </Routes>
     </AuthProvider>
+    </MarketplaceProvider>
   );
 }
+

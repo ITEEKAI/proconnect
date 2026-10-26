@@ -4,10 +4,12 @@ import { homeFor, useAuth } from '../lib/auth';
 import { Avatar, Button, LinkButton, cx } from './ui';
 import { Icons } from './icons';
 import { NotificationBell } from './NotificationBell';
+import { useMarketplace } from '../lib/marketplace';
 
 export function Logo({ className, inverted = false }: { className?: string; inverted?: boolean }) {
+  const marketplace = useMarketplace();
   return (
-    <Link to="/" className={cx('inline-flex items-center gap-2.5', className)} aria-label="SimplyServices home">
+    <Link to="/" className={cx('inline-flex items-center gap-2.5', className)} aria-label={`${marketplace.identity.businessName} home`}>
       <SimplyServicesMark className="size-9 shrink-0" inverted={inverted} />
       <span
         className={cx(
@@ -15,7 +17,7 @@ export function Logo({ className, inverted = false }: { className?: string; inve
           inverted ? 'text-white' : 'text-ink-950',
         )}
       >
-        SimplyServices
+        {marketplace.identity.logoText}
       </span>
     </Link>
   );
@@ -154,6 +156,7 @@ export function UserMenu() {
 
 export function PublicLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const marketplace = useMarketplace();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -221,6 +224,12 @@ export function PublicLayout() {
         )}
       </header>
 
+      {marketplace.prototype.enabled && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-xs font-medium text-amber-900">
+          {marketplace.prototype.notice}
+        </div>
+      )}
+
       <main className="flex-1">
         <Outlet />
       </main>
@@ -231,16 +240,17 @@ export function PublicLayout() {
 }
 
 function Footer() {
+  const marketplace = useMarketplace();
   return (
     <footer className="bg-ink-950 mt-20 text-white">
       <div className="container-page grid gap-10 py-14 md:grid-cols-4">
         <div className="md:col-span-1">
           <Logo inverted />
           <p className="text-ink-400 mt-3 max-w-xs text-sm leading-relaxed">
-            Connecting customers with trusted professionals. Published hourly rates, verified credentials,
+            Connecting customers with reviewed specialists. Published rates, credential workflows,
             and one place to manage the work.
           </p>
-          <p className="text-ink-500 mt-4 text-xs">The ProConnect marketplace, part of SimplyServices.</p>
+          <p className="text-ink-500 mt-4 text-xs">Powered by {marketplace.identity.platformName} for {marketplace.identity.operatorName}.</p>
         </div>
         <FooterColumn
           title="Company"
@@ -280,8 +290,8 @@ function Footer() {
         </LinkButton>
       </div>
       <div className="border-ink-800 container-page text-ink-500 flex flex-wrap items-center justify-between gap-3 border-t py-6 text-xs">
-        <p>© {new Date().getFullYear()} SimplyServices. All rights reserved.</p>
-        <p>ProConnect marketplace demo.</p>
+        <p>© {new Date().getFullYear()} {marketplace.identity.businessName}. All rights reserved.</p>
+        <p>{marketplace.identity.platformName} prototype — no live payments.</p>
       </div>
     </footer>
   );
@@ -397,3 +407,4 @@ export function PageLoader() {
 }
 
 export { Button };
+

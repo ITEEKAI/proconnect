@@ -57,6 +57,7 @@ export function toPublicDto(row: ProfessionalRow): ProfessionalDto {
     verificationStatus: row.verification_status,
     isPublished: row.is_published === 1,
     responseTimeHours: row.response_time_hours,
+    isDemo: row.is_demo === 1,
     rating: { average: row.rating_avg, count: row.rating_count },
     createdAt: row.created_at,
   };
@@ -173,3 +174,4 @@ export function rateHistory(professionalId: number, limit = 25): RateChangeRow[]
     limit,
   );
 }
+

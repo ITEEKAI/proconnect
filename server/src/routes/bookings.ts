@@ -9,6 +9,7 @@ import { ApiError } from '../lib/errors.ts';
 import { bookingReference } from '../lib/format.ts';
 import { asyncHandler, parseBody } from '../lib/http.ts';
 import { startCheckout } from '../payments/checkout.ts';
+import { marketplace } from '../business/marketplace.ts';
 
 export const bookingsRouter = Router();
 bookingsRouter.use(requireAuth());
@@ -44,6 +45,13 @@ interface BookingRow {
   total_cents: number | null;
   payment_status: 'unpaid' | 'paid' | 'waived';
   professional_note: string | null;
+  service_type: 'consultation' | 'onsite';
+  customer_reference: string | null;
+  assessment_reference: string | null;
+  requested_service: string | null;
+  professional_referral: string | null;
+  handoff_status: string;
+  follow_up_status: string;
   created_at: string;
   client_name: string;
   professional_user_id: number;
@@ -70,6 +78,17 @@ function toDto(row: BookingRow) {
     totalCents: row.total_cents,
     paymentStatus: row.payment_status ?? 'unpaid',
     professionalNote: row.professional_note,
+    serviceType: row.service_type,
+    integration: {
+      customerReference: row.customer_reference,
+      assessmentReference: row.assessment_reference,
+      requestedService: row.requested_service,
+      professionalReferral: row.professional_referral,
+      bookingStatus: row.status,
+      projectHandoff: row.handoff_status,
+      completionFollowUp: row.follow_up_status,
+      mode: marketplace.integrations.offgrid056Os.mode,
+    },
     withinHours: professionalFitsAvailability(row.professional_id, row.scheduled_for),
     createdAt: row.created_at,
     client: { id: row.client_id, name: row.client_name },
@@ -94,6 +113,10 @@ bookingsRouter.post(
         details: z.string().trim().max(4000).default(''),
         scheduledFor: z.string().trim().min(4, 'Choose a date and time.'),
         estimatedHours: z.coerce.number().min(0.25).max(200),
+        serviceType: z.enum(['consultation', 'onsite']).default('onsite'),
+        customerReference: z.string().trim().max(120).optional(),
+        assessmentReference: z.string().trim().max(120).optional(),
+        requestedService: z.string().trim().max(240).optional(),
       }),
       req.body,
     );
@@ -110,8 +133,9 @@ bookingsRouter.post(
     const { lastInsertRowid } = run(
       `INSERT INTO bookings
          (reference, client_id, professional_id, subject, details, scheduled_for,
-          estimated_hours, hourly_rate_cents, callout_fee_cents, currency)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          estimated_hours, hourly_rate_cents, callout_fee_cents, currency, service_type,
+          customer_reference, assessment_reference, requested_service, professional_referral)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       bookingReference(),
       user.id,
       pro.id,
@@ -122,6 +146,11 @@ bookingsRouter.post(
       pro.hourly_rate_cents,
       pro.callout_fee_cents,
       pro.currency,
+      body.serviceType,
+      body.customerReference ?? null,
+      body.assessmentReference ?? null,
+      body.requestedService ?? body.subject,
+      `professional:${pro.id}`,
     );
 
     const row = get<BookingRow>(`${BOOKING_SELECT} WHERE b.id = ?`, lastInsertRowid);
@@ -412,3 +441,4 @@ bookingsRouter.post(
     res.status(201).json({ ok: true });
   }),
 );
+

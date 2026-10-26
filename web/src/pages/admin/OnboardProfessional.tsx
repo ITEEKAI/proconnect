@@ -42,7 +42,7 @@ export function OnboardProfessional() {
     bio: '',
     city: '',
     region: '',
-    country: 'United Kingdom',
+    country: 'New Zealand',
     yearsExperience: '10',
     hourlyRate: '',
     monthlyFee: '',
@@ -248,7 +248,7 @@ export function OnboardProfessional() {
                 min={0}
                 step="1"
                 required
-                prefix="£"
+                prefix="$"
                 hint="Shown to clients on their profile."
                 value={form.hourlyRate}
                 onChange={(e) => set('hourlyRate', e.target.value)}
@@ -286,7 +286,7 @@ export function OnboardProfessional() {
                     type="number"
                     min={0}
                     step="1"
-                    prefix="£"
+                    prefix="$"
                     value={form.monthlyFee}
                     onChange={(e) => set('monthlyFee', e.target.value)}
                     error={error?.fieldError('monthlyFee')}
@@ -402,3 +402,4 @@ function StatusLine({ ok, label }: { ok: boolean; label: string }) {
     </p>
   );
 }
+

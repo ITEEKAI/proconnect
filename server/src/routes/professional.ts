@@ -375,10 +375,11 @@ professionalRouter.post(
       customerEmail: user.email,
       amountCents: invoice.amount_cents,
       currency: invoice.currency,
-      description: `SimplyServices membership ${invoice.period_start} – ${invoice.period_end}`,
+      description: `ProConnect membership ${invoice.period_start} – ${invoice.period_end}`,
       successPath: '/dashboard/billing',
       cancelPath: '/dashboard/billing',
     });
     res.json(checkout);
   }),
 );
+

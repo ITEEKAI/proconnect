@@ -17,11 +17,14 @@ import type { ProfessionalRow } from '../domain/types.ts';
 import { ApiError } from '../lib/errors.ts';
 import { addMonths, today, uniqueSlug } from '../lib/format.ts';
 import { asyncHandler, parseBody, parseQuery } from '../lib/http.ts';
+import { marketplace } from '../business/marketplace.ts';
 
 export const adminRouter = Router();
 adminRouter.use(requireAuth('admin'));
 
 const money = (dollars: number): number => Math.round(dollars * 100);
+const formatMoney = (cents: number, currency: string = marketplace.locale.currency): string =>
+  new Intl.NumberFormat(marketplace.locale.locale, { style: 'currency', currency }).format(cents / 100);
 
 // ---------------------------------------------------------------------------
 // Overview
@@ -240,8 +243,8 @@ adminRouter.post(
            (user_id, category_id, plan_id, slug, display_name, headline, bio, business_name,
             city, region, country, years_experience, hourly_rate_cents, monthly_fee_cents,
             fee_is_overridden, subscription_status, next_invoice_date, specialties, languages,
-            verification_status, is_published)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?)`,
+            verification_status, is_published, currency)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)`,
         userId,
         category.id,
         plan.id,
@@ -262,6 +265,7 @@ adminRouter.post(
         JSON.stringify(body.languages),
         body.verificationStatus,
         body.isPublished ? 1 : 0,
+        marketplace.locale.currency,
       );
 
       recordRateChange({
@@ -486,7 +490,7 @@ adminRouter.put(
       existing.user_id,
       'professional.fee',
       'Your monthly membership fee changed',
-      `An administrator set your fee to £${(nextFee / 100).toFixed(2)} per month.`,
+      `An administrator set your fee to ${formatMoney(nextFee)} per month.`,
       '/dashboard/billing',
     );
 
@@ -553,7 +557,7 @@ adminRouter.post(
       existing.user_id,
       'invoice.raised',
       'New membership invoice',
-      `A £${(existing.monthly_fee_cents / 100).toFixed(2)} invoice is due.`,
+      `A ${formatMoney(existing.monthly_fee_cents, existing.currency)} invoice is due.`,
       '/dashboard/billing',
     );
 
@@ -600,7 +604,7 @@ adminRouter.patch(
         invoice.user_id,
         'invoice.paid',
         'Membership invoice marked paid',
-        `Your £${(invoice.amount_cents / 100).toFixed(2)} invoice was recorded as paid.`,
+        `Your ${formatMoney(invoice.amount_cents, invoice.currency)} invoice was recorded as paid.`,
         '/dashboard/billing',
       );
     }
@@ -677,12 +681,13 @@ adminRouter.post(
       (candidate) => !!get<{ id: number }>('SELECT id FROM plans WHERE slug = ?', candidate),
     );
     const { lastInsertRowid } = run(
-      `INSERT INTO plans (slug, name, description, monthly_fee_cents, commission_bps, max_listings, features, is_active, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO plans (slug, name, description, monthly_fee_cents, currency, commission_bps, max_listings, features, is_active, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       slug,
       body.name,
       body.description,
       money(body.monthlyFee),
+      marketplace.locale.currency,
       Math.round(body.commissionPercent * 100),
       body.maxListings,
       JSON.stringify(body.features),
@@ -895,3 +900,4 @@ adminRouter.get(
     res.json({ events: listAudit(150) });
   }),
 );
+

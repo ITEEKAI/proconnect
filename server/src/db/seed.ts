@@ -2,6 +2,7 @@ import { get, getDb, run, transaction } from './database.ts';
 import { hashPassword } from '../auth/password.ts';
 import { seedDefaultAvailability } from '../domain/availability.ts';
 import { addMonths, bookingReference, slugify } from '../lib/format.ts';
+import { marketplace } from '../business/marketplace.ts';
 
 interface CategorySeed {
   slug: string;
@@ -11,6 +12,7 @@ interface CategorySeed {
 }
 
 const CATEGORIES: CategorySeed[] = [
+  ...marketplace.categories,
   {
     slug: 'lawyers',
     name: 'Lawyers',
@@ -85,47 +87,7 @@ interface PlanSeed {
 }
 
 const PLANS: PlanSeed[] = [
-  {
-    slug: 'starter',
-    name: 'Starter',
-    description: 'Get listed and start taking enquiries.',
-    monthlyFeeCents: 2900,
-    commissionBps: 1200,
-    maxListings: 1,
-    features: ['Directory listing', 'Up to 10 enquiries a month', 'Hourly rate control', 'Email support'],
-    sortOrder: 1,
-  },
-  {
-    slug: 'professional',
-    name: 'Professional',
-    description: 'For established practices who want steady lead flow.',
-    monthlyFeeCents: 7900,
-    commissionBps: 800,
-    maxListings: 2,
-    features: [
-      'Everything in Starter',
-      'Unlimited enquiries',
-      'Higher search placement',
-      'Verified badge',
-      'Client review requests',
-    ],
-    sortOrder: 2,
-  },
-  {
-    slug: 'premier',
-    name: 'Premier',
-    description: 'Featured placement and the lowest commission.',
-    monthlyFeeCents: 19900,
-    commissionBps: 500,
-    maxListings: 5,
-    features: [
-      'Everything in Professional',
-      'Featured on category pages',
-      'Priority enquiry routing',
-      'Dedicated account manager',
-    ],
-    sortOrder: 3,
-  },
+  ...marketplace.membershipPlans,
   {
     slug: 'enterprise',
     name: 'Enterprise',
@@ -169,9 +131,59 @@ interface ProSeed {
   feeOverride?: number;
   subscription?: 'trialing' | 'active' | 'past_due' | 'cancelled';
   responseHours?: number;
+  isDemo?: boolean;
 }
 
 const PROFESSIONALS: ProSeed[] = [
+  {
+    email: 'water.demo@offgrid056.test', fullName: 'Water Systems Demo', category: 'water-storage-rainwater-plumbing',
+    plan: 'professional', headline: 'Prototype profile — water storage, rain harvesting and filtration planning',
+    bio: 'Demonstration profile for testing the OffGrid056 marketplace workflow. This is not a real provider and is not available for live work.',
+    city: 'Wellington', region: 'Wellington', country: 'New Zealand', years: 8, hourly: 145, callout: 65,
+    specialties: ['Rainwater capture', 'Storage sizing', 'Filtration planning'], serviceAreas: ['Wellington', 'Kāpiti Coast'], isDemo: true,
+  },
+  {
+    email: 'power.demo@offgrid056.test', fullName: 'Critical Power Demo', category: 'solar-battery-critical-power',
+    plan: 'professional', headline: 'Prototype profile — solar, battery and critical-load system planning',
+    bio: 'Demonstration profile for testing the OffGrid056 marketplace workflow. This is not a real electrician or solar provider.',
+    city: 'Auckland', region: 'Auckland', country: 'New Zealand', years: 10, hourly: 165,
+    specialties: ['Critical-load mapping', 'Battery sizing', 'Backup planning'], serviceAreas: ['Auckland', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'food.demo@offgrid056.test', fullName: 'Food Systems Demo', category: 'food-growing-greenhouses-gardens',
+    plan: 'starter', headline: 'Prototype profile — productive gardens and protected growing systems',
+    bio: 'Demonstration profile for testing the OffGrid056 marketplace workflow. This is not a real provider.',
+    city: 'Christchurch', region: 'Canterbury', country: 'New Zealand', years: 7, hourly: 110, freeConsultation: true,
+    specialties: ['Garden planning', 'Greenhouses', 'Seasonal production'], serviceAreas: ['Canterbury', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'shelter.demo@offgrid056.test', fullName: 'Resilient Shelter Demo', category: 'shelter-emergency-building',
+    plan: 'professional', headline: 'Prototype profile — resilient shelter and emergency accommodation planning',
+    bio: 'Demonstration profile for workflow testing only. This is not a real licensed building provider.',
+    city: 'Hamilton', region: 'Waikato', country: 'New Zealand', years: 9, hourly: 155,
+    specialties: ['Emergency shelter', 'Resilient retrofit', 'Project scoping'], serviceAreas: ['Waikato'], isDemo: true,
+  },
+  {
+    email: 'air.demo@offgrid056.test', fullName: 'Healthy Air Demo', category: 'air-quality-ventilation-safety',
+    plan: 'starter', headline: 'Prototype profile — indoor air quality and ventilation assessment',
+    bio: 'Demonstration profile for workflow testing only. This is not a real safety assessor.',
+    city: 'Dunedin', region: 'Otago', country: 'New Zealand', years: 6, hourly: 125,
+    specialties: ['Ventilation review', 'Air quality', 'Safety planning'], serviceAreas: ['Otago', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'resilience.demo@offgrid056.test', fullName: 'Resilience Planning Demo', category: 'resilience-emergency-preparedness',
+    plan: 'professional', headline: 'Prototype profile — household and small-business resilience planning',
+    bio: 'Demonstration profile for testing consultations and project handoffs. This is not a real provider.',
+    city: 'Nelson', region: 'Nelson', country: 'New Zealand', years: 12, hourly: 150, freeConsultation: true,
+    specialties: ['Readiness assessment', 'Continuity planning', 'Preparedness exercises'], serviceAreas: ['New Zealand', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'community.demo@offgrid056.test', fullName: 'Community Training Demo', category: 'community-preparedness-training',
+    plan: 'starter', headline: 'Prototype profile — community preparedness workshops and coordination',
+    bio: 'Demonstration profile for workflow testing only. This is not a real trainer or provider.',
+    city: 'Napier', region: 'Hawke’s Bay', country: 'New Zealand', years: 8, hourly: 120,
+    specialties: ['Community workshops', 'Neighbourhood planning', 'Response exercises'], serviceAreas: ['Hawke’s Bay', 'Remote'], isDemo: true,
+  },
   {
     email: 'amelia.hartley@example.com',
     fullName: 'Amelia Hartley',
@@ -651,13 +663,17 @@ export function ensureSeedData(force = false): boolean {
 
     for (const plan of PLANS) {
       run(
-        `INSERT INTO plans (slug, name, description, monthly_fee_cents, commission_bps, max_listings, features, sort_order)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT (slug) DO NOTHING`,
+        `INSERT INTO plans (slug, name, description, monthly_fee_cents, currency, commission_bps, max_listings, features, sort_order)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT (slug) DO UPDATE SET name = excluded.name, description = excluded.description,
+           monthly_fee_cents = excluded.monthly_fee_cents, currency = excluded.currency,
+           commission_bps = excluded.commission_bps, max_listings = excluded.max_listings,
+           features = excluded.features, sort_order = excluded.sort_order`,
         plan.slug,
         plan.name,
         plan.description,
         plan.monthlyFeeCents,
+        marketplace.locale.currency,
         plan.commissionBps,
         plan.maxListings,
         JSON.stringify(plan.features),
@@ -716,8 +732,8 @@ export function ensureSeedData(force = false): boolean {
             city, region, country, years_experience, hourly_rate_cents, minimum_hours,
             callout_fee_cents, free_consultation, monthly_fee_cents, fee_is_overridden,
             subscription_status, next_invoice_date, specialties, languages, credentials,
-            service_areas, verification_status, is_published, response_time_hours)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            service_areas, verification_status, is_published, response_time_hours, currency, is_demo)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         userId,
         category.id,
         plan.id,
@@ -745,6 +761,8 @@ export function ensureSeedData(force = false): boolean {
         verification,
         published ? 1 : 0,
         pro.responseHours ?? 24,
+        marketplace.locale.currency,
+        pro.isDemo === false ? 0 : 1,
       );
       proIds.set(pro.email, proId);
       proUserIds.set(pro.email, userId);
@@ -771,22 +789,24 @@ export function ensureSeedData(force = false): boolean {
 
       if (published) {
         run(
-          `INSERT INTO subscription_invoices (professional_id, period_start, period_end, amount_cents, status)
-           VALUES (?, ?, ?, ?, 'paid')`,
+          `INSERT INTO subscription_invoices (professional_id, period_start, period_end, amount_cents, currency, status)
+           VALUES (?, ?, ?, ?, ?, 'paid')`,
           proId,
           addMonths(new Date(), -1),
           addMonths(new Date(), 0),
           fee,
+          marketplace.locale.currency,
         );
       }
       if (pro.email === 'james.whitfield@example.com') {
         run(
-          `INSERT INTO subscription_invoices (professional_id, period_start, period_end, amount_cents, status)
-           VALUES (?, ?, ?, ?, 'due')`,
+          `INSERT INTO subscription_invoices (professional_id, period_start, period_end, amount_cents, currency, status)
+           VALUES (?, ?, ?, ?, ?, 'due')`,
           proId,
           addMonths(new Date(), 0),
           addMonths(new Date(), 1),
           fee,
+          marketplace.locale.currency,
         );
       }
     }
@@ -972,3 +992,4 @@ if (isDirectRun) {
   const seeded = ensureSeedData(process.argv.includes('--force'));
   console.log(seeded ? '[seed] demo data created' : '[seed] database already contains data, nothing to do');
 }
+

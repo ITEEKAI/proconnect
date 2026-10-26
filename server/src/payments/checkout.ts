@@ -6,6 +6,7 @@ import { findById } from '../domain/professionals.ts';
 import { ApiError } from '../lib/errors.ts';
 import { paymentGateway } from './gateway.ts';
 import type { PaymentKind, PaymentSessionRow } from './types.ts';
+import { marketplace } from '../business/marketplace.ts';
 
 const SESSION_SELECT = `SELECT * FROM payment_sessions`;
 
@@ -51,6 +52,9 @@ export async function startCheckout(input: {
   cancelPath: string;
 }): Promise<{ url: string; sessionId: string; provider: 'stripe' | 'demo' }> {
   if (input.amountCents < 1) throw ApiError.badRequest('There is nothing to charge on this invoice.');
+  if (config.isProduction && config.paymentsProvider === 'demo') {
+    throw ApiError.badRequest('Test checkout is disabled in production. Configure verified Stripe test mode first.');
+  }
 
   const targetId = input.kind === 'booking' ? input.bookingId : input.invoiceId;
   const pending = get<PaymentSessionRow>(
@@ -196,7 +200,7 @@ export async function fulfillSession(row: PaymentSessionRow, source: 'webhook' |
         invoice.user_id,
         'invoice.paid',
         'Membership invoice paid',
-        `Your £${(invoice.amount_cents / 100).toFixed(2)} membership invoice was paid by card.`,
+        `Your ${new Intl.NumberFormat(marketplace.locale.locale, { style: 'currency', currency: row.currency }).format(invoice.amount_cents / 100)} membership invoice was paid by card.`,
         '/dashboard/billing',
       );
     }
@@ -224,6 +228,9 @@ export async function confirmProviderRef(providerRef: string, userId: number): P
 }
 
 export async function completeDemoSession(providerRef: string, userId: number): Promise<PaymentSessionRow> {
+  if (config.isProduction) {
+    throw ApiError.badRequest('Test checkout cannot settle an invoice in production.');
+  }
   const row = getSessionForPayer(providerRef, userId);
   if (row.provider !== 'demo') {
     throw ApiError.badRequest('This checkout is handled by Stripe, not the test page.');
@@ -236,3 +243,4 @@ export async function fulfillProviderRef(providerRef: string): Promise<PaymentSe
   if (!row) return undefined;
   return fulfillSession(row, 'webhook');
 }
+

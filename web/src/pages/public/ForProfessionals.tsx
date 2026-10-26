@@ -4,6 +4,7 @@ import { useAsync } from '../../lib/useAsync';
 import type { Plan } from '../../lib/types';
 import { Icons } from '../../components/icons';
 import { Card, LinkButton, Skeleton, cx } from '../../components/ui';
+import { useMarketplace } from '../../lib/marketplace';
 
 export function ForProfessionals() {
   const plans = useAsync(() => api<{ plans: Plan[] }>('/directory/plans'));
@@ -39,7 +40,7 @@ export function ForProfessionals() {
             <ul className="mt-5 space-y-4">
               {[
                 ['Full control of your hourly rate', 'Change it whenever you like. Existing bookings keep the rate they were quoted at.'],
-                ['A verified profile', 'We check your credentials once, then your profile carries the verified badge.'],
+                ['A reviewed profile', 'We check relevant credentials before a live profile is published.'],
                 ['Enquiries with context', 'Every request arrives with the job, the date and the hours the client expects.'],
                 ['Hours and invoicing', 'Log the hours you actually worked and the total is calculated for you.'],
                 ['Transparent membership fee', 'One monthly figure, visible in your billing tab, with every change recorded.'],
@@ -127,10 +128,11 @@ export function ForProfessionals() {
 }
 
 export function HowItWorks() {
+  const marketplace = useMarketplace();
   return (
     <div className="container-page py-14 lg:py-20">
       <header className="mx-auto max-w-2xl text-center">
-        <h1 className="text-ink-950 text-4xl font-semibold tracking-tight">How SimplyServices works</h1>
+        <h1 className="text-ink-950 text-4xl font-semibold tracking-tight">How {marketplace.identity.businessName} works</h1>
         <p className="text-ink-500 mt-4 text-lg">
           A marketplace built around one idea: you should know the hourly rate before you make contact.
         </p>
@@ -142,7 +144,7 @@ export function HowItWorks() {
           <ol className="mt-6 space-y-6">
             {[
               ['Search', 'Filter by profession, location, hourly rate and rating.'],
-              ['Compare', 'Read verified credentials, specialisms and reviews from real bookings.'],
+              ['Compare', 'Read reviewed credentials, specialisms and reviews tied to bookings.'],
               ['Request', 'Send the job with a date and expected hours. You see the estimate immediately.'],
               ['Confirm', 'They accept, do the work and log hours. You are billed at the rate you booked.'],
               ['Review', 'Rate the work once it is complete. Reviews are tied to real bookings only.'],
@@ -165,7 +167,7 @@ export function HowItWorks() {
           <ol className="mt-6 space-y-6">
             {[
               ['Apply', 'Tell us your field, location and hourly rate, and pick a membership plan.'],
-              ['Get verified', 'Our team checks your credentials before your profile goes live.'],
+              ['Credential review', 'Our team checks relevant credentials before your profile goes live.'],
               ['Set your rate', 'You control your hourly rate, minimum engagement and call-out fee.'],
               ['Take bookings', 'Accept or decline requests, then log the hours you actually worked.'],
               ['Pay one fee', 'A single monthly membership, always visible in your billing tab.'],
@@ -198,15 +200,15 @@ export function HowItWorks() {
             ],
             [
               'How do I pay?',
-              'After the professional logs the hours, you pay the job invoice by card. Until Stripe live keys are added, the app uses a test checkout (card 4242…). Professionals pay their monthly membership the same way from Membership.',
+              'This prototype records NZD invoices and uses test checkout only. No live payment activation is authorised.',
             ],
             [
               'What does the professional pay?',
               'A flat monthly membership fee based on their plan, plus a commission on completed work. Administrators can agree a bespoke monthly fee, which is shown to the professional in their billing tab.',
             ],
             [
-              'How are professionals verified?',
-              'We check identity and the credentials they list — practising certificates, trade registrations and accreditations. Only verified profiles appear in the directory.',
+              'How are professionals reviewed?',
+              'The live process will check identity and relevant licences, registrations and accreditations before a profile is published. Demo profiles are labelled clearly and are not real providers.',
             ],
             [
               'Can I review anyone?',
@@ -223,3 +225,4 @@ export function HowItWorks() {
     </div>
   );
 }
+

@@ -13,11 +13,11 @@ describe('public directory', () => {
     const res = await ctx.request('/api/directory/categories');
     assert.equal(res.status, 200);
     const slugs = res.body.categories.map((c: { slug: string }) => c.slug);
-    for (const expected of ['lawyers', 'accountants', 'real-estate-agents', 'electricians', 'business-coaches']) {
+    for (const expected of ['water-storage-rainwater-plumbing', 'solar-battery-critical-power', 'resilience-emergency-preparedness']) {
       assert.ok(slugs.includes(expected), `expected the ${expected} category`);
     }
-    const lawyers = res.body.categories.find((c: { slug: string }) => c.slug === 'lawyers');
-    assert.ok(lawyers.professionalCount >= 2);
+    const water = res.body.categories.find((c: { slug: string }) => c.slug === 'water-storage-rainwater-plumbing');
+    assert.ok(water.professionalCount >= 1);
   });
 
   it('only returns verified, published professionals', async () => {
@@ -31,31 +31,31 @@ describe('public directory', () => {
   });
 
   it('filters by category', async () => {
-    const res = await ctx.request('/api/directory/professionals?category=electricians');
+    const res = await ctx.request('/api/directory/professionals?category=solar-battery-critical-power');
     assert.ok(res.body.results.length > 0);
-    assert.ok(res.body.results.every((p: { category: { slug: string } }) => p.category.slug === 'electricians'));
+    assert.ok(res.body.results.every((p: { category: { slug: string } }) => p.category.slug === 'solar-battery-critical-power'));
   });
 
   it('filters by free-text search across name, headline and specialties', async () => {
-    const res = await ctx.request('/api/directory/professionals?q=EV%20charger');
-    assert.ok(res.body.results.some((p: { displayName: string }) => p.displayName === 'James Whitfield'));
+    const res = await ctx.request('/api/directory/professionals?q=critical-load');
+    assert.ok(res.body.results.some((p: { displayName: string }) => p.displayName === 'Critical Power Demo'));
   });
 
   it('filters by location including declared service areas', async () => {
-    const res = await ctx.request('/api/directory/professionals?location=Manchester');
-    assert.ok(res.body.results.length >= 2);
+    const res = await ctx.request('/api/directory/professionals?location=Wellington');
+    assert.ok(res.body.results.length >= 1);
     assert.ok(
       res.body.results.every(
         (p: { location: { city: string }; serviceAreas: string[] }) =>
-          p.location.city === 'Manchester' || p.serviceAreas.includes('Manchester'),
+          p.location.city === 'Wellington' || p.serviceAreas.includes('Wellington'),
       ),
     );
   });
 
   it('filters by maximum hourly rate', async () => {
-    const res = await ctx.request('/api/directory/professionals?maxRate=100&pageSize=48');
+    const res = await ctx.request('/api/directory/professionals?maxRate=120&pageSize=48');
     assert.ok(res.body.results.length > 0);
-    assert.ok(res.body.results.every((p: { pricing: { hourlyRateCents: number } }) => p.pricing.hourlyRateCents <= 10000));
+    assert.ok(res.body.results.every((p: { pricing: { hourlyRateCents: number } }) => p.pricing.hourlyRateCents <= 12000));
   });
 
   it('sorts by price ascending and descending', async () => {
@@ -78,12 +78,11 @@ describe('public directory', () => {
   });
 
   it('serves a full profile with reviews', async () => {
-    const res = await ctx.request('/api/directory/professionals/amelia-hartley-manchester');
+    const res = await ctx.request('/api/directory/professionals/resilience-planning-demo-nelson');
     assert.equal(res.status, 200);
-    assert.equal(res.body.professional.displayName, 'Amelia Hartley');
-    assert.ok(res.body.professional.credentials.length > 0);
-    assert.ok(res.body.reviews.length > 0);
-    assert.ok(res.body.professional.rating.average > 0);
+    assert.equal(res.body.professional.displayName, 'Resilience Planning Demo');
+    assert.equal(res.body.professional.isDemo, true);
+    assert.equal(res.body.professional.pricing.currency, 'NZD');
   });
 
   it('hides unpublished profiles behind a 404', async () => {
@@ -141,3 +140,4 @@ describe('public directory', () => {
     assert.match(res.body.error.message, /verified/);
   });
 });
+
