@@ -175,7 +175,7 @@ describe('admin management', () => {
     assert.equal(login.status, 403);
   });
 
-  it('creates a category that the public directory then exposes', async () => {
+  it('keeps newly created categories private until added to the edition configuration', async () => {
     const res = await ctx.request('/api/admin/categories', {
       token,
       json: { name: 'Veterinary Surgeons', description: 'Small animal and equine practice.', icon: 'paw' },

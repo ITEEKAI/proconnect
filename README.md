@@ -129,7 +129,8 @@ lists the three accounts above and fills the form for you.
 
 The server runs TypeScript directly through Node's type stripping in
 development and tests, and compiles with `tsc` for production. Money is stored
-as integer pence throughout; only the presentation layer divides by 100.
+as integer ISO-currency minor units throughout; the active OffGrid056 edition
+uses NZD cents and the presentation layer formats values with `Intl.NumberFormat`.
 
 ### Data model
 
