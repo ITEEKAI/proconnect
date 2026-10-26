@@ -108,4 +108,3 @@ export function scheduledTimeFitsHours(
   const end = (endParts[0] ?? 0) * 60 + (endParts[1] ?? 0);
   return minute >= start && minute < end;
 }
-

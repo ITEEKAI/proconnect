@@ -123,4 +123,3 @@ export function CheckoutPage() {
     </div>
   );
 }
-

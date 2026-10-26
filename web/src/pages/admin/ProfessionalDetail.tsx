@@ -713,4 +713,3 @@ function RateOverrideModal({
     </Modal>
   );
 }
-

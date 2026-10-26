@@ -76,4 +76,3 @@ export function ProfessionalCard({ pro }: { pro: Professional }) {
     </Link>
   );
 }
-

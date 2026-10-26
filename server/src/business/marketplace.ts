@@ -158,4 +158,3 @@ export const marketplaceCategorySlugs = marketplace.categories.map((category) =>
 export function publicMarketplaceConfig() {
   return marketplace;
 }
-

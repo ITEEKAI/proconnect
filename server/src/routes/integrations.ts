@@ -97,4 +97,3 @@ integrationsRouter.patch(
     res.json({ handoff: handoffDto(updated) });
   }),
 );
-

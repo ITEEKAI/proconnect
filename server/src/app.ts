@@ -63,4 +63,3 @@ export function createApp(): Express {
   app.use(errorHandler);
   return app;
 }
-

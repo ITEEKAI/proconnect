@@ -106,4 +106,3 @@ export interface ProfessionalPrivateDto extends ProfessionalDto {
     nextInvoiceDate: string | null;
   };
 }
-

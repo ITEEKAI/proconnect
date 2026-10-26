@@ -37,4 +37,3 @@ Changing the configuration does not convert existing database records. Clone int
 - No live TidyCal, Zoom or OffGrid056 OS credentials.
 - No automatic transfer of private customer records.
 - No live payments or provider payouts.
-

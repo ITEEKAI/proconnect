@@ -236,4 +236,3 @@ NODE_ENV=production HOST=0.0.0.0 PUBLIC_URL=https://app.example.com AUTH_SECRET=
 ## Not included
 
 Card payouts to professionals (Stripe Connect), email delivery, and a live card processor until you add Stripe keys. Avatar photos are stored on the local disk under `/uploads`.
-

@@ -300,4 +300,3 @@ CREATE TABLE IF NOT EXISTS availability_slots (
   UNIQUE (professional_id, weekday)
 );
 `;
-

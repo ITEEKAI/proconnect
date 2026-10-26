@@ -560,4 +560,3 @@ function BookingModal({
     </Modal>
   );
 }
-

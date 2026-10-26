@@ -382,4 +382,3 @@ professionalRouter.post(
     res.json(checkout);
   }),
 );
-

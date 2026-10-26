@@ -78,4 +78,3 @@ describe('OffGrid056 marketplace edition', () => {
     assert.equal(updated.body.handoff.completionFollowUp, 'due');
   });
 });
-

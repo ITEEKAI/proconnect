@@ -44,4 +44,3 @@ Before replacing mock mode:
 7. Test duplicate events, reordered events, unavailable systems and revoked consent.
 
 No customer profile, assessment body, Resource Library document, message or invoice should cross the boundary under this MVP contract.
-

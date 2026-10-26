@@ -243,4 +243,3 @@ export async function fulfillProviderRef(providerRef: string): Promise<PaymentSe
   if (!row) return undefined;
   return fulfillSession(row, 'webhook');
 }
-

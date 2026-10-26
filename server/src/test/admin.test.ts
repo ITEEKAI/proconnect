@@ -236,4 +236,3 @@ describe('admin management', () => {
     assert.ok(res.body.events.some((e: { action: string }) => e.action === 'professional.onboard'));
   });
 });
-

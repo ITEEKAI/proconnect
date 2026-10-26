@@ -992,4 +992,3 @@ if (isDirectRun) {
   const seeded = ensureSeedData(process.argv.includes('--force'));
   console.log(seeded ? '[seed] demo data created' : '[seed] database already contains data, nothing to do');
 }
-

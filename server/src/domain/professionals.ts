@@ -174,4 +174,3 @@ export function rateHistory(professionalId: number, limit = 25): RateChangeRow[]
     limit,
   );
 }
-

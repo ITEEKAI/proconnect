@@ -217,4 +217,3 @@ export interface AdminOverview {
   byPlan: Array<{ name: string; professionals: number; monthlyRevenueCents: number }>;
   recentActivity: AuditEvent[];
 }
-

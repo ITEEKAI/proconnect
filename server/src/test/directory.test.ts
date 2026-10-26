@@ -140,4 +140,3 @@ describe('public directory', () => {
     assert.match(res.body.error.message, /verified/);
   });
 });
-

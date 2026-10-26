@@ -80,4 +80,3 @@ export function MarketplaceProvider({ children }: { children: ReactNode }) {
 export function useMarketplace(): MarketplaceConfig {
   return useContext(MarketplaceContext);
 }
-

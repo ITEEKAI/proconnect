@@ -900,4 +900,3 @@ adminRouter.get(
     res.json({ events: listAudit(150) });
   }),
 );
-

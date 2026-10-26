@@ -97,4 +97,3 @@ New automated tests cover edition configuration, category isolation, demo labell
 4. Formalise the OffGrid056 OS consent screen and event contract before any real API connection.
 5. Complete payment/legal controls, then run an owner-observed sandbox acceptance test.
 6. Keep each future 056 edition as a separate configuration and deployment until true multi-tenancy has a justified business case.
-

@@ -441,4 +441,3 @@ bookingsRouter.post(
     res.status(201).json({ ok: true });
   }),
 );
-
