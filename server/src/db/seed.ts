@@ -499,14 +499,70 @@ const PROFESSIONALS: ProSeed[] = [
   },
 ];
 
+const HPLBIZ_PROFESSIONALS: ProSeed[] = [
+  {
+    email: 'strategy.demo@hplbiz.test', fullName: 'HPL Strategy Adviser Demo', category: 'business-strategy-planning', plan: 'professional',
+    headline: 'Prototype adviser — business strategy, planning and growth roadmaps',
+    bio: 'Demonstration adviser for testing the HPLBIZ marketplace clone. This is not a real adviser or live service.',
+    city: 'Auckland', region: 'Auckland', country: 'New Zealand', years: 12, hourly: 185, freeConsultation: true,
+    specialties: ['Business planning', 'Growth roadmaps', 'Governance'], serviceAreas: ['Auckland', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'finance.demo@hplbiz.test', fullName: 'HPL Finance Adviser Demo', category: 'finance-funding-readiness', plan: 'professional',
+    headline: 'Prototype adviser — cash flow, reporting and funding readiness',
+    bio: 'Demonstration adviser for workflow testing only. This is not a real accountant or financial adviser.',
+    city: 'Wellington', region: 'Wellington', country: 'New Zealand', years: 10, hourly: 175,
+    specialties: ['Cash-flow planning', 'Management reporting', 'Funding preparation'], serviceAreas: ['Wellington', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'growth.demo@hplbiz.test', fullName: 'HPL Growth Adviser Demo', category: 'sales-marketing-growth', plan: 'starter',
+    headline: 'Prototype adviser — sales systems, positioning and customer growth',
+    bio: 'Demonstration adviser for testing the HPLBIZ marketplace clone. This is not a real provider.',
+    city: 'Tauranga', region: 'Bay of Plenty', country: 'New Zealand', years: 9, hourly: 160,
+    specialties: ['Sales process', 'Positioning', 'Lead generation'], serviceAreas: ['Bay of Plenty', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'operations.demo@hplbiz.test', fullName: 'HPL Operations Adviser Demo', category: 'operations-process-improvement', plan: 'professional',
+    headline: 'Prototype adviser — process improvement and operational systems',
+    bio: 'Demonstration adviser for workflow testing only. This is not a real provider.',
+    city: 'Hamilton', region: 'Waikato', country: 'New Zealand', years: 11, hourly: 170,
+    specialties: ['Process mapping', 'Capacity planning', 'Quality systems'], serviceAreas: ['Waikato', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'people.demo@hplbiz.test', fullName: 'HPL People Adviser Demo', category: 'people-leadership', plan: 'starter',
+    headline: 'Prototype adviser — leadership, team systems and performance',
+    bio: 'Demonstration adviser for workflow testing only. This is not a real HR or employment provider.',
+    city: 'Christchurch', region: 'Canterbury', country: 'New Zealand', years: 8, hourly: 155,
+    specialties: ['Leadership coaching', 'Team systems', 'Performance frameworks'], serviceAreas: ['Canterbury', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'technology.demo@hplbiz.test', fullName: 'HPL AI Enablement Demo', category: 'technology-ai-enablement', plan: 'premier',
+    headline: 'Prototype adviser — practical AI, automation and digital capability',
+    bio: 'Demonstration adviser for testing the HPLBIZ marketplace clone. This is not a real technology provider.',
+    city: 'Auckland', region: 'Auckland', country: 'New Zealand', years: 10, hourly: 195, freeConsultation: true,
+    specialties: ['AI readiness', 'Workflow automation', 'Digital systems'], serviceAreas: ['New Zealand', 'Remote'], isDemo: true,
+  },
+  {
+    email: 'risk.demo@hplbiz.test', fullName: 'HPL Risk Adviser Demo', category: 'compliance-risk', plan: 'professional',
+    headline: 'Prototype adviser — business risk, continuity and compliance readiness',
+    bio: 'Demonstration adviser for workflow testing only. This is not a real legal or compliance provider.',
+    city: 'Dunedin', region: 'Otago', country: 'New Zealand', years: 13, hourly: 180,
+    specialties: ['Risk registers', 'Business continuity', 'Policy review'], serviceAreas: ['Otago', 'Remote'], isDemo: true,
+  },
+];
+
+const EDITION_PROFESSIONALS = marketplace.edition === 'hplbiz' ? HPLBIZ_PROFESSIONALS : PROFESSIONALS;
+
 interface ClientSeed {
   email: string;
   fullName: string;
   phone?: string;
 }
 
-const CLIENTS: ClientSeed[] = [
-  { email: 'client@proconnect.test', fullName: 'Jordan Avery', phone: '+44 7700 900123' },
+const CLIENTS: ClientSeed[] = marketplace.edition === 'hplbiz' ? [
+  { email: marketplace.demoAccounts.client.email, fullName: marketplace.demoAccounts.client.name, phone: '+64 21 555 0142' },
+] : [
+  { email: marketplace.demoAccounts.client.email, fullName: marketplace.demoAccounts.client.name, phone: '+64 21 555 0101' },
   { email: 'megan.foster@example.com', fullName: 'Megan Foster' },
   { email: 'ravi.patel@example.com', fullName: 'Ravi Patel' },
   { email: 'chloe.dubois@example.com', fullName: 'Chloe Dubois' },
@@ -627,12 +683,13 @@ const BOOKINGS: BookingSeed[] = [
 ];
 
 const ADMIN = {
-  email: 'admin@proconnect.test',
-  fullName: 'Alex Morgan',
-  password: 'admin1234',
+  email: marketplace.demoAccounts.admin.email,
+  fullName: marketplace.demoAccounts.admin.name,
+  password: marketplace.demoAccounts.admin.password,
 };
 
-const DEMO_PASSWORD = 'password123';
+const CLIENT_PASSWORD = marketplace.demoAccounts.client.password;
+const PROFESSIONAL_PASSWORD = marketplace.demoAccounts.professional.password;
 
 function isoDateTime(daysFromNow: number, hour = 10): string {
   const d = new Date();
@@ -696,7 +753,7 @@ export function ensureSeedData(force = false): boolean {
         `INSERT INTO users (email, password_hash, role, full_name, phone)
          VALUES (?, ?, 'client', ?, ?)`,
         client.email,
-        hashPassword(DEMO_PASSWORD),
+        hashPassword(CLIENT_PASSWORD),
         client.fullName,
         client.phone ?? null,
       );
@@ -705,7 +762,7 @@ export function ensureSeedData(force = false): boolean {
 
     const proUserIds = new Map<string, number>();
     const proIds = new Map<string, number>();
-    for (const pro of PROFESSIONALS) {
+    for (const pro of EDITION_PROFESSIONALS) {
       const category = get<{ id: number }>('SELECT id FROM categories WHERE slug = ?', pro.category);
       const plan = get<{ id: number; monthly_fee_cents: number; name: string }>(
         'SELECT id, monthly_fee_cents, name FROM plans WHERE slug = ?',
@@ -717,7 +774,7 @@ export function ensureSeedData(force = false): boolean {
         `INSERT INTO users (email, password_hash, role, full_name)
          VALUES (?, ?, 'professional', ?)`,
         pro.email,
-        hashPassword(DEMO_PASSWORD),
+        hashPassword(PROFESSIONAL_PASSWORD),
         pro.fullName,
       );
 

@@ -39,10 +39,9 @@ export function Home() {
         <div className="container-page grid items-center gap-12 py-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,22rem)] lg:py-20">
           <div>
             <h1 className="text-ink-950 text-4xl leading-[1.12] font-semibold tracking-tight sm:text-5xl">
-              Build practical resilience.
+              Find {marketplace.identity.businessName} specialists.
               <br />
-              Find the right specialist.{' '}
-              <span className="text-brand-600">Track the work in one place.</span>
+              <span className="text-brand-600">Clear pricing. Managed requests.</span>
             </h1>
             <p className="text-ink-600 mt-5 max-w-xl text-lg leading-relaxed">
               {marketplace.identity.tagline} Browse reviewed specialists, compare published NZD rates,
@@ -79,7 +78,7 @@ export function Home() {
               <input
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
-                placeholder="e.g. rainwater, solar, preparedness"
+                placeholder={marketplace.marketing.searchPlaceholder}
                 className="field pl-10"
               />
             </div>
@@ -98,7 +97,7 @@ export function Home() {
             </Button>
             <p className="text-ink-500 mt-3 text-center text-xs">
               Popular:{' '}
-              {['Rainwater', 'Battery backup', 'Resilience plan'].map((item, i) => (
+              {marketplace.marketing.searchExamples.map((item, i) => (
                 <span key={item}>
                   {i > 0 && ' · '}
                   <Link to={`/browse?q=${encodeURIComponent(item)}`} className="text-brand-700 hover:underline">
@@ -159,7 +158,7 @@ export function Home() {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-ink-950 text-2xl font-semibold tracking-tight sm:text-3xl">Services</h2>
-            <p className="text-ink-500 mt-2">Seven resilience fields with published rates and credential review.</p>
+            <p className="text-ink-500 mt-2">Configured specialist fields with published NZD rates and credential review.</p>
           </div>
           <LinkButton to="/categories" variant="outline">
             All services <Icons.arrowRight className="size-4" />

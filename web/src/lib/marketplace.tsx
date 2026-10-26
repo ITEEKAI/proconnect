@@ -32,6 +32,12 @@ export interface MarketplaceConfig {
     payments: { mode: string; liveEnabled: boolean };
   };
   prototype: { enabled: boolean; notice: string };
+  demoAccounts?: {
+    admin: { email: string; password: string; name: string };
+    client: { email: string; password: string; name: string };
+    professional: { email: string; password: string; label: string };
+  };
+  marketing: { searchExamples: readonly string[]; searchPlaceholder: string };
 }
 
 const fallback: MarketplaceConfig = {
@@ -54,6 +60,7 @@ const fallback: MarketplaceConfig = {
     payments: { mode: 'test-only', liveEnabled: false },
   },
   prototype: { enabled: true, notice: 'Prototype environment. Demo profiles and transactions are test data.' },
+  marketing: { searchExamples: ['Rainwater', 'Battery backup', 'Resilience plan'], searchPlaceholder: 'e.g. rainwater, solar, preparedness' },
 };
 
 const MarketplaceContext = createContext<MarketplaceConfig>(fallback);

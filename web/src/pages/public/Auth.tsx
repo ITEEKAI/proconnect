@@ -5,17 +5,7 @@ import { homeFor, useAuth } from '../../lib/auth';
 import { Logo } from '../../components/Layout';
 import { Alert, Button, Card, TextInput } from '../../components/ui';
 import { Icons } from '../../components/icons';
-
-const DEMO_ACCOUNTS = [
-  { label: 'Admin', email: 'admin@proconnect.test', password: 'admin1234', hint: 'Full platform control' },
-  {
-    label: 'Professional',
-    email: 'james.whitfield@example.com',
-    password: 'password123',
-    hint: 'Electrician, Premier plan',
-  },
-  { label: 'Client', email: 'client@proconnect.test', password: 'password123', hint: 'Has live bookings' },
-];
+import { useMarketplace } from '../../lib/marketplace';
 
 function AuthShell({ title, subtitle, children, aside }: {
   title: string;
@@ -37,6 +27,7 @@ function AuthShell({ title, subtitle, children, aside }: {
 }
 
 export function Login() {
+  const marketplace = useMarketplace();
   const { login } = useAuth();
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -46,6 +37,11 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<ApiError | null>(null);
   const [loading, setLoading] = useState(false);
+  const demoAccounts = marketplace.demoAccounts ? [
+    { label: 'Admin', ...marketplace.demoAccounts.admin, hint: 'Full prototype control' },
+    { label: 'Professional', email: marketplace.demoAccounts.professional.email, password: marketplace.demoAccounts.professional.password, hint: marketplace.demoAccounts.professional.label },
+    { label: 'Client', ...marketplace.demoAccounts.client, hint: 'Customer demonstration account' },
+  ] : [];
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -72,7 +68,7 @@ export function Login() {
             This is a demonstration build. Pick a role to sign in instantly.
           </p>
           <div className="mt-4 space-y-2.5">
-            {DEMO_ACCOUNTS.map((account) => (
+            {demoAccounts.map((account) => (
               <button
                 key={account.email}
                 type="button"

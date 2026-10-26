@@ -6,3 +6,5 @@ data/
 *.db-wal
 .env
 .env.local
+.local-data/
+test-results/

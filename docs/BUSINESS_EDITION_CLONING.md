@@ -1,39 +1,43 @@
 # ProConnect business-edition cloning
 
-ProConnect uses one deployment per business edition. This keeps the MVP maintainable: it reuses the marketplace engine without introducing tenant-aware authentication, billing, data isolation or routing.
+ProConnect runs one configured business edition and one database per process. That reuses the marketplace engine without mixing authentication, billing, customer records or professional records across businesses.
 
-## Clone an edition
+## Launch an existing edition
 
-1. Create a feature branch from the latest approved ProConnect baseline.
-2. Copy `server/src/business/marketplace.ts` and change the single exported `marketplace` object.
-3. Set the business identity, logo text, brand colours, New Zealand or international locale, ISO 4217 currency, categories, plans, commission basis points, booking pathways and integration status.
-4. Replace OffGrid056 prototype seed profiles with clearly labelled edition-specific test records. Never seed a fictional provider in a way that implies they are a real verified professional.
-5. Update edition-specific copy only where the shared configuration does not cover it.
-6. Add tests equivalent to `server/src/test/marketplace.test.ts`: public configuration, category boundary, currency, demo labelling, booking type and integration reference handling.
-7. Run `npm test`, `npm run typecheck`, `npm run build` and `npm audit`.
-8. Obtain owner approval before configuring a public domain, live payment keys or a production deployment.
+Set `BUSINESS_EDITION` to a registered edition ID and give that process its own `DATA_DIR`, API port, web port and public URL. The included Windows launchers demonstrate this for `offgrid056` and `hplbiz`; they do not edit source code and their databases are kept in separate folders.
 
-## Supported configuration
+## Add a future 056 edition
 
-- Identity: business, marketplace, platform and operator names; tagline and logo text.
-- Branding: primary, dark-primary, accent and surface colours.
-- Locale: country, locale, currency, symbol and region list.
-- Catalogue: public professional categories.
-- Commercial model: membership plans, fees in integer minor units and commission basis points.
-- Booking: consultation and on-site pathways, coordinator and planned providers.
-- Integrations: explicit mock/planned/test-only modes.
-- Prototype controls: visible notice and demo-profile labelling.
+1. Create one edition module beside `server/src/business/editions/offgrid056.ts` and implement the `MarketplaceEdition` interface.
+2. Register the new ID and module once in `server/src/business/marketplace.ts`.
+3. Configure identity, logo text, brand colours, locale, ISO 4217 currency, categories, plans, commission basis points, booking pathways, integration modes, demo accounts and search copy in that module.
+4. Add clearly labelled edition-specific seed profiles. Never imply that fictional records are real verified providers.
+5. Give the edition a unique `DATA_DIR` and unique test credentials. Never point two editions at the same database.
+6. Add an isolated child-process test equivalent to `hplbiz-edition.test.ts`; it must verify identity, categories, sample data and credential separation.
+7. Run the automated tests, typecheck, production build, dependency audit and browser acceptance suite.
+8. Obtain owner approval before adding a domain, production database, external credentials, live payments or a public deployment.
+
+## Configuration coverage
+
+- Identity, marketplace/platform/operator names, tagline and logo text.
+- Primary, dark-primary, accent and surface colours.
+- Country, locale, currency, symbol and regions.
+- Public categories and edition-specific demonstration profiles.
+- Membership plans, minor-unit fees and commission basis points.
+- Consultation and on-site pathways and their coordinators.
+- TidyCal, Zoom, OS handoff and payment modes.
+- Prototype notice, demo credentials and search examples.
+
+The current proof still requires one small registry edit for a brand-new edition. A future improvement should discover edition modules from a validated manifest so adding a business is configuration-only. Shared page copy should also continue moving into the edition configuration instead of accumulating business-name conditionals.
 
 ## Data and money rules
 
-Money is stored as integer minor units. For NZD, `$145.00` is stored as `14500`; it is not a relabelled GBP value. Every booking snapshots its professional rate, call-out fee and currency. A future edition must seed and create plans, profiles, invoices and bookings in its configured ISO currency and must add tests for fractional values, totals and rate snapshots.
-
-Changing the configuration does not convert existing database records. Clone into a new database or write and verify an explicit migration.
+Money is stored in integer minor units. For NZD, `$145.00` is stored as `14500`. Every booking snapshots rate, call-out fee and currency. Configuration changes do not convert existing records: create a separate database or write and verify an explicit migration.
 
 ## Deliberate MVP limits
 
-- One business edition per deployment.
-- No cross-edition user or billing administration.
+- One business edition per process and database.
+- No cross-edition administration, identity or billing.
 - No live TidyCal, Zoom or OffGrid056 OS credentials.
 - No automatic transfer of private customer records.
 - No live payments or provider payouts.
