@@ -8,3 +8,5 @@ data/
 .env.local
 .local-data/
 test-results/
+playwright-report/
+blob-report/

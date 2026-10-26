@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from 'react';
 import { Link } from 'react-router-dom';
 import { avatarColour, initials } from '../lib/format';
@@ -100,25 +100,28 @@ export function LinkButton({ to, variant = 'primary', size = 'md', className, ch
 
 interface FieldWrapperProps {
   label?: string;
+  htmlFor?: string;
   hint?: string;
+  hintId?: string;
   error?: string;
+  errorId?: string;
   required?: boolean;
   className?: string;
   children: ReactNode;
 }
 
-export function Field({ label, hint, error, required, className, children }: FieldWrapperProps) {
+export function Field({ label, htmlFor, hint, hintId, error, errorId, required, className, children }: FieldWrapperProps) {
   return (
     <div className={className}>
       {label && (
-        <span className="label-text">
+        <label className="label-text" htmlFor={htmlFor}>
           {label}
-          {required && <span className="text-rose-600"> *</span>}
-        </span>
+          {required && <span className="text-rose-600" aria-hidden="true"> *</span>}
+        </label>
       )}
       {children}
-      {hint && !error && <p className="text-ink-500 mt-1.5 text-xs">{hint}</p>}
-      {error && <p className="mt-1.5 text-xs font-medium text-rose-600">{error}</p>}
+      {hint && !error && <p id={hintId} className="text-ink-500 mt-1.5 text-xs">{hint}</p>}
+      {error && <p id={errorId} role="alert" className="mt-1.5 text-xs font-medium text-rose-600">{error}</p>}
     </div>
   );
 }
@@ -132,11 +135,19 @@ interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function TextInput({ label, hint, error, prefix, wrapperClassName, className, ...rest }: TextInputProps) {
+  const generatedId = useId();
+  const inputId = rest.id ?? `field-${generatedId.replaceAll(':', '')}`;
+  const hintId = hint && !error ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const describedBy = [rest['aria-describedby'], errorId ?? hintId].filter(Boolean).join(' ') || undefined;
   return (
     <Field
       label={label}
+      htmlFor={inputId}
       hint={hint}
+      hintId={hintId}
       error={error}
+      errorId={errorId}
       required={rest.required}
       className={wrapperClassName}
     >
@@ -148,6 +159,9 @@ export function TextInput({ label, hint, error, prefix, wrapperClassName, classN
         )}
         <input
           {...rest}
+          id={inputId}
+          aria-describedby={describedBy}
+          aria-invalid={error ? true : rest['aria-invalid']}
           className={cx('field', prefix && 'pl-7', error && 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20', className)}
         />
       </div>
@@ -163,9 +177,14 @@ interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
 }
 
 export function TextArea({ label, hint, error, wrapperClassName, className, ...rest }: TextAreaProps) {
+  const generatedId = useId();
+  const inputId = rest.id ?? `field-${generatedId.replaceAll(':', '')}`;
+  const hintId = hint && !error ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const describedBy = [rest['aria-describedby'], errorId ?? hintId].filter(Boolean).join(' ') || undefined;
   return (
-    <Field label={label} hint={hint} error={error} required={rest.required} className={wrapperClassName}>
-      <textarea {...rest} className={cx('field min-h-28 resize-y', error && 'border-rose-300', className)} />
+    <Field label={label} htmlFor={inputId} hint={hint} hintId={hintId} error={error} errorId={errorId} required={rest.required} className={wrapperClassName}>
+      <textarea {...rest} id={inputId} aria-describedby={describedBy} aria-invalid={error ? true : rest['aria-invalid']} className={cx('field min-h-28 resize-y', error && 'border-rose-300', className)} />
     </Field>
   );
 }
@@ -178,9 +197,14 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export function Select({ label, hint, error, wrapperClassName, className, children, ...rest }: SelectProps) {
+  const generatedId = useId();
+  const inputId = rest.id ?? `field-${generatedId.replaceAll(':', '')}`;
+  const hintId = hint && !error ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
+  const describedBy = [rest['aria-describedby'], errorId ?? hintId].filter(Boolean).join(' ') || undefined;
   return (
-    <Field label={label} hint={hint} error={error} required={rest.required} className={wrapperClassName}>
-      <select {...rest} className={cx('field appearance-none bg-[length:16px] pr-9', error && 'border-rose-300', className)}
+    <Field label={label} htmlFor={inputId} hint={hint} hintId={hintId} error={error} errorId={errorId} required={rest.required} className={wrapperClassName}>
+      <select {...rest} id={inputId} aria-describedby={describedBy} aria-invalid={error ? true : rest['aria-invalid']} className={cx('field appearance-none bg-[length:16px] pr-9', error && 'border-rose-300', className)}
         style={{
           backgroundImage:
             "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23647694'%3E%3Cpath d='M4.5 6.5 8 10l3.5-3.5' stroke='%23647694' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E\")",
@@ -215,6 +239,10 @@ export function TagInput({
   wrapperClassName,
 }: TagInputProps) {
   const [draft, setDraft] = useState('');
+  const generatedId = useId();
+  const inputId = `field-${generatedId.replaceAll(':', '')}`;
+  const hintId = hint && !error ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
 
   function commit() {
     const value = draft.trim();
@@ -224,7 +252,7 @@ export function TagInput({
   }
 
   return (
-    <Field label={label} hint={hint} error={error} className={wrapperClassName}>
+    <Field label={label} htmlFor={inputId} hint={hint} hintId={hintId} error={error} errorId={errorId} className={wrapperClassName}>
       <div className="border-ink-200 focus-within:border-brand-500 focus-within:ring-brand-500/20 flex flex-wrap items-center gap-1.5 rounded-xl border bg-white p-2 transition focus-within:ring-4">
         {values.map((value) => (
           <span
@@ -245,6 +273,9 @@ export function TagInput({
           </span>
         ))}
         <input
+          id={inputId}
+          aria-describedby={errorId ?? hintId}
+          aria-invalid={error ? true : undefined}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {

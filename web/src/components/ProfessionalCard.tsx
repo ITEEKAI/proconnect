@@ -8,9 +8,9 @@ export function ProfessionalCard({ pro }: { pro: Professional }) {
   return (
     <Link
       to={`/pro/${pro.slug}`}
-      className="card hover:shadow-lift hover:border-brand-200 group flex flex-col p-5 transition"
+      className="card hover:shadow-lift hover:border-brand-200 group min-w-0 flex flex-col p-5 transition"
     >
-      <div className="flex items-start gap-4">
+      <div className="flex min-w-0 items-start gap-4">
         <Avatar name={pro.displayName} size="lg" src={pro.avatarUrl} />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">

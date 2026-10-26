@@ -250,7 +250,7 @@ function Footer() {
             Connecting customers with reviewed specialists. Published rates, credential workflows,
             and one place to manage the work.
           </p>
-          <p className="text-ink-500 mt-4 text-xs">Powered by {marketplace.identity.platformName} for {marketplace.identity.operatorName}.</p>
+          <p className="text-ink-300 mt-4 text-xs">Powered by {marketplace.identity.platformName} for {marketplace.identity.operatorName}.</p>
         </div>
         <FooterColumn
           title="Company"
@@ -289,7 +289,7 @@ function Footer() {
           Apply as a professional
         </LinkButton>
       </div>
-      <div className="border-ink-800 container-page text-ink-500 flex flex-wrap items-center justify-between gap-3 border-t py-6 text-xs">
+      <div className="border-ink-800 container-page text-ink-300 flex flex-wrap items-center justify-between gap-3 border-t py-6 text-xs">
         <p>© {new Date().getFullYear()} {marketplace.identity.businessName}. All rights reserved.</p>
         <p>{marketplace.identity.platformName} prototype — no live payments.</p>
       </div>
